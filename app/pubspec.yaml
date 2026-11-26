@@ -12,7 +12,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   archive: ^4.7.1
-  cross_file: ^0.4.0
+  cross_file: ^0.3.5+2
   file_picker: ^13.4.1
   image_picker: ^1.2.4
   intl: ^0.20.2

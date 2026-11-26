@@ -708,7 +708,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final zip = await StaticPackageBuilder().buildWebsitePackage(_document);
       await widget.repository.recordExported(revision);
       await SharePlus.instance.share(ShareParams(
-        files: [XFile.fileSystem(path: zip.path)],
+        files: [XFile(zip.path)],
         subject: 'MenuCard website package',
         text: 'Upload this ZIP to your static hosting provider. Extract or upload its files at the same public folder to publish your menu.',
       ));
@@ -724,7 +724,7 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final file = await StaticPackageBuilder().buildPrivateBackup(_document);
       await SharePlus.instance.share(ShareParams(
-        files: [XFile.fileSystem(path: file.path)],
+        files: [XFile(file.path)],
         subject: 'MenuCard private menu backup',
         text: 'Keep this ZIP somewhere safe. It contains your local shop/menu JSON and the selected item photos.',
       ));
