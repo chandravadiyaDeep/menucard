@@ -161,4 +161,66 @@ void main() {
     expect(recovered.document.shop.name['en'], savedName);
     recovered.dispose();
   });
+
+  test('parallel owner actions are serialized without losing menu changes', () async {
+    await repository.saveShop(
+      name: 'Concurrent Cafe',
+      description: '',
+      translationLocale: 'en',
+      defaultLocale: 'en',
+    );
+
+    // Simulate fast repeated taps that trigger multiple local writes together.
+    await Future.wait([
+      repository.saveCategory(title: 'Hot Drinks', locale: 'en'),
+      repository.saveCategory(title: 'Cold Drinks', locale: 'en'),
+      repository.saveCategory(title: 'Snacks', locale: 'en'),
+    ]);
+
+    expect(repository.document.categories, hasLength(3));
+    final reloaded = await MenuRepository.openAt(file);
+    expect(reloaded.document.categories, hasLength(3));
+    reloaded.dispose();
+  });
+
+  test('editing and moving an item preserves its stable ID and updates price', () async {
+    await repository.saveShop(
+      name: 'Edit Test Shop',
+      description: '',
+      translationLocale: 'en',
+      defaultLocale: 'en',
+    );
+    await repository.saveCategory(title: 'Drinks', locale: 'en');
+    await repository.saveCategory(title: 'Snacks', locale: 'en');
+    final drinks = repository.document.categories[0];
+    final snacks = repository.document.categories[1];
+
+    await repository.saveItem(
+      categoryId: drinks.id,
+      name: 'Lemon Soda',
+      description: 'Fresh',
+      locale: 'en',
+      priceMinor: 2000,
+      available: true,
+    );
+    final original = drinks.items.single;
+
+    await repository.saveItem(
+      id: original.id,
+      categoryId: snacks.id,
+      name: 'Lemon Soda Large',
+      description: 'Updated',
+      locale: 'en',
+      priceMinor: 3000,
+      available: false,
+    );
+
+    expect(drinks.items, isEmpty);
+    expect(snacks.items, hasLength(1));
+    expect(snacks.items.single.id, original.id);
+    expect(snacks.items.single.priceMinor, 3000);
+    expect(snacks.items.single.available, isFalse);
+    expect(snacks.items.single.nameFor('en', 'en'), 'Lemon Soda Large');
+  });
+
 }
