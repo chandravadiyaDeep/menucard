@@ -1,25 +1,25 @@
 # Android app
 
-This directory contains the Flutter application.
+This directory contains the Flutter owner application.
 
-## Prerequisites
-- Flutter stable
-- Android SDK / Android toolchain
+## Approved V1 architecture
+The app must use one versioned JSON file in private on-device storage as the authoritative menu source. All menu editing, validation, preview, translation, backup and publish-package generation runs on-device. There is no backend, API server, database service or automatic sync.
+
+The current scaffold still contains a Drift/SQLite prototype. It is not compliant with the approved V1 architecture and must be replaced before feature expansion.
 
 ## Run locally
 ```bash
 cd app
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs
 flutter test
 flutter run
 ```
 
-The generated Drift file `lib/data/app_database.g.dart` is produced by build_runner. It is not checked into this initial scaffold.
+During the JSON migration, remove Drift-specific code generation and database dependencies. Add useful comments to all new code.
 
 ## Build APK
 ```bash
 flutter build apk --release
 ```
 
-The initial scope is shop profile, categories, menu item creation and a local preview. QR publishing, backup/restore, translations editing, images, and synchronization are later milestones and are not represented as complete here.
+A successful build must be verified in CI/device testing before calling an APK release-ready.
