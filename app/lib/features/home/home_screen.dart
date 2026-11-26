@@ -1,8 +1,7 @@
 import 'dart:io';
 
-import 'package:cross_file/cross_file.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -121,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(.14), borderRadius: BorderRadius.circular(30)),
+                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: .14), borderRadius: BorderRadius.circular(30)),
                     child: const Row(mainAxisSize: MainAxisSize.min, children: [
                       Icon(Icons.offline_bolt_rounded, color: Color(0xFFB8E0C5), size: 14),
                       SizedBox(width: 5),
@@ -296,7 +295,9 @@ class _HomeScreenState extends State<HomeScreen> {
             IconButton(tooltip: 'Edit category', onPressed: () => _showCategoryDialog(category: category), icon: const Icon(Icons.edit_outlined, size: 18)),
             PopupMenuButton<String>(
               onSelected: (value) {
-                if (value == 'delete') _deleteCategory(category);
+                if (value == 'delete') {
+                  _deleteCategory(category);
+                }
               },
               itemBuilder: (_) => const [PopupMenuItem(value: 'delete', child: Text('Delete category'))],
             ),
@@ -335,9 +336,15 @@ class _HomeScreenState extends State<HomeScreen> {
             PopupMenuButton<String>(
               padding: EdgeInsets.zero,
               onSelected: (value) async {
-                if (value == 'edit') _showItemDialog(item: item);
-                if (value == 'delete') await widget.repository.deleteItem(item.id);
-                if (value == 'toggle') await widget.repository.setItemAvailability(item.id, !item.available);
+                if (value == 'edit') {
+                  _showItemDialog(item: item);
+                }
+                if (value == 'delete') {
+                  await widget.repository.deleteItem(item.id);
+                }
+                if (value == 'toggle') {
+                  await widget.repository.setItemAvailability(item.id, !item.available);
+                }
               },
               itemBuilder: (_) => [
                 const PopupMenuItem(value: 'edit', child: Text('Edit item')),
@@ -641,7 +648,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 try {
                   final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 82, maxWidth: 1600);
                   if (picked != null) {
-                    final source = File(picked.uri.toFilePath());
+                    final source = File(picked.path);
                     final stored = await widget.repository.importImage(source);
                     setDialogState(() => imagePath = stored);
                   }
@@ -712,6 +719,7 @@ class _HomeScreenState extends State<HomeScreen> {
         subject: 'MenuCard website package',
         text: 'Upload this ZIP to your static hosting provider. Extract or upload its files at the same public folder to publish your menu.',
       ));
+      if (!mounted) return;
       _message('Website package created. Remember: the menu is not live until you upload it.');
     } catch (error) {
       _message(_cleanError(error));
@@ -728,6 +736,7 @@ class _HomeScreenState extends State<HomeScreen> {
         subject: 'MenuCard private menu backup',
         text: 'Keep this ZIP somewhere safe. It contains your local shop/menu JSON and the selected item photos.',
       ));
+      if (!mounted) return;
       _message('Private backup file prepared.');
     } catch (error) {
       _message(_cleanError(error));
@@ -737,7 +746,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _restoreBackup() async {
     try {
       final picked = await FilePicker.pickFile(type: FileType.custom, allowedExtensions: ['zip']);
-      if (picked == null) return;
+      if (!mounted || picked == null) return;
       final approved = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
@@ -749,7 +758,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       );
-      if (approved != true) return;
+      if (!mounted || approved != true) return;
       final bytes = await picked.readAsBytes();
       await StaticPackageBuilder().restorePrivateBackup(bytes, widget.repository);
       _locale = _document.defaultLocale;
@@ -763,6 +772,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _confirmPublished() async {
     try {
       await widget.repository.confirmPublished(_urlController.text);
+      if (!mounted) return;
       _urlController.text = _document.publishedUrl ?? _urlController.text.trim();
       _message('Publishing confirmation saved on this device.');
     } catch (error) {

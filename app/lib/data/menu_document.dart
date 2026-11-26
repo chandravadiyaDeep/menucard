@@ -109,15 +109,21 @@ class MenuDocument {
       };
 
   void validate() {
-    if (shopId.trim().isEmpty) throw const FormatException('Shop ID is missing.');
-    if (revision < 1) throw const FormatException('Menu revision must be positive.');
+    if (shopId.trim().isEmpty) {
+      throw const FormatException('Shop ID is missing.');
+    }
+    if (revision < 1) {
+      throw const FormatException('Menu revision must be positive.');
+    }
     if (!['en', 'gu', 'hi'].contains(defaultLocale)) {
       throw const FormatException('Choose English, Gujarati or Hindi as the default language.');
     }
     if (languages.isEmpty || languages.any((language) => !['en', 'gu', 'hi'].contains(language))) {
       throw const FormatException('The menu contains an unsupported language.');
     }
-    if (categories.length > 500) throw const FormatException('A menu can contain at most 500 categories.');
+    if (categories.length > 500) {
+      throw const FormatException('A menu can contain at most 500 categories.');
+    }
 
     final categoryIds = <String>{};
     final itemIds = <String>{};
@@ -144,7 +150,9 @@ class MenuDocument {
         }
       }
     }
-    if (totalItems > 5000) throw const FormatException('A menu can contain at most 5,000 items.');
+    if (totalItems > 5000) {
+      throw const FormatException('A menu can contain at most 5,000 items.');
+    }
   }
 }
 
@@ -259,7 +267,7 @@ class MenuItem {
       };
 
   Map<String, dynamic> toPublicJson() {
-    final name = imagePath == null ? null : imagePath!.split(RegExp(r'[/\\]')).last;
+    final name = imagePath?.split(RegExp(r'[/\\]')).last;
     return {
       'id': id,
       'sort_order': sortOrder,
@@ -285,7 +293,9 @@ String _translatedValue(
 }
 
 Map<String, String> _stringMap(dynamic value) {
-  if (value is! Map) return {};
+  if (value is! Map) {
+    return {};
+  }
   return value.map((key, item) => MapEntry(key.toString(), item?.toString() ?? ''));
 }
 
@@ -299,24 +309,32 @@ Map<String, Map<String, String>> _translationMap(dynamic value) {
 }
 
 Map<String, dynamic> _asMap(dynamic value, String field) {
-  if (value is! Map) throw FormatException('The $field data is invalid.');
+  if (value is! Map) {
+    throw FormatException('The $field data is invalid.');
+  }
   return Map<String, dynamic>.from(value);
 }
 
 String _requiredString(dynamic value, String field) {
   final text = value?.toString().trim() ?? '';
-  if (text.isEmpty) throw FormatException('The $field field is missing.');
+  if (text.isEmpty) {
+    throw FormatException('The $field field is missing.');
+  }
   return text;
 }
 
 int _positiveInt(dynamic value) {
   final result = value is int ? value : int.tryParse(value?.toString() ?? '');
-  if (result == null || result < 1) throw const FormatException('A positive integer value is required.');
+  if (result == null || result < 1) {
+    throw const FormatException('A positive integer value is required.');
+  }
   return result;
 }
 
 int _nonNegativeInt(dynamic value) {
   final result = value is int ? value : int.tryParse(value?.toString() ?? '');
-  if (result == null || result < 0) throw const FormatException('A non-negative integer value is required.');
+  if (result == null || result < 0) {
+    throw const FormatException('A non-negative integer value is required.');
+  }
   return result;
 }

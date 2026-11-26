@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:flutter/services.dart';
@@ -28,7 +27,9 @@ class StaticPackageBuilder {
     final imagePaths = <String>{};
     for (final category in document.categories) {
       for (final item in category.items) {
-        if (item.imagePath != null) imagePaths.add(item.imagePath!);
+        if (item.imagePath != null) {
+          imagePaths.add(item.imagePath!);
+        }
       }
     }
     for (final imagePath in imagePaths) {
@@ -112,13 +113,19 @@ class StaticPackageBuilder {
         break;
       }
     }
-    if (backupEntry == null) throw const FormatException('This ZIP is not a MenuCard backup.');
+    if (backupEntry == null) {
+      throw const FormatException('This ZIP is not a MenuCard backup.');
+    }
 
     final decoded = jsonDecode(utf8.decode(backupEntry.content as List<int>));
-    if (decoded is! Map) throw const FormatException('The backup menu JSON is invalid.');
+    if (decoded is! Map) {
+      throw const FormatException('The backup menu JSON is invalid.');
+    }
     final snapshot = Map<String, dynamic>.from(decoded);
     final categories = snapshot['categories'];
-    if (categories is! List) throw const FormatException('The backup categories are invalid.');
+    if (categories is! List) {
+      throw const FormatException('The backup categories are invalid.');
+    }
 
     for (final rawCategory in categories) {
       final category = Map<String, dynamic>.from(rawCategory as Map);
@@ -137,7 +144,9 @@ class StaticPackageBuilder {
               break;
             }
           }
-          if (imageEntry == null) throw const FormatException('A backup image is missing.');
+          if (imageEntry == null) {
+            throw const FormatException('A backup image is missing.');
+          }
           final fileName = savedPath.substring(7);
           item['image_path'] = await repository.importImageBytes(fileName, imageEntry.content as List<int>);
         }

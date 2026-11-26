@@ -35,7 +35,9 @@ class MenuRepository extends ChangeNotifier {
 
     try {
       final decoded = jsonDecode(await file.readAsString());
-      if (decoded is! Map) throw const FormatException('The local menu is not a JSON object.');
+      if (decoded is! Map) {
+        throw const FormatException('The local menu is not a JSON object.');
+      }
       return MenuRepository._(file, MenuDocument.fromJson(Map<String, dynamic>.from(decoded)));
     } catch (primaryError) {
       // Recover only from a previously validated backup; never silently erase the damaged file.
@@ -66,7 +68,9 @@ class MenuRepository extends ChangeNotifier {
     String? address,
   }) async {
     final cleanName = name.trim();
-    if (cleanName.isEmpty) throw ArgumentError('Enter your shop name.');
+    if (cleanName.isEmpty) {
+      throw ArgumentError('Enter your shop name.');
+    }
     await _mutate((next) {
       _ensureLanguage(next, translationLocale);
       _ensureLanguage(next, defaultLocale);
@@ -84,7 +88,9 @@ class MenuRepository extends ChangeNotifier {
     required String locale,
   }) async {
     final cleanTitle = title.trim();
-    if (cleanTitle.isEmpty) throw ArgumentError('Enter a category name.');
+    if (cleanTitle.isEmpty) {
+      throw ArgumentError('Enter a category name.');
+    }
     await _mutate((next) {
       _ensureLanguage(next, locale);
       final category = id == null
@@ -92,7 +98,9 @@ class MenuRepository extends ChangeNotifier {
           : next.categories.firstWhere((entry) => entry.id == id,
               orElse: () => throw ArgumentError('Category no longer exists.'));
       category.translations.putIfAbsent(locale, () => {})['title'] = cleanTitle;
-      if (id == null) next.categories.add(category);
+      if (id == null) {
+        next.categories.add(category);
+      }
     });
   }
 
@@ -121,8 +129,12 @@ class MenuRepository extends ChangeNotifier {
     String? imagePath,
   }) async {
     final cleanName = name.trim();
-    if (cleanName.isEmpty) throw ArgumentError('Enter an item name.');
-    if (priceMinor < 0) throw ArgumentError('Price cannot be negative.');
+    if (cleanName.isEmpty) {
+      throw ArgumentError('Enter an item name.');
+    }
+    if (priceMinor < 0) {
+      throw ArgumentError('Price cannot be negative.');
+    }
     await _mutate((next) {
       _ensureLanguage(next, locale);
       final category = next.categories.firstWhere((entry) => entry.id == categoryId,
@@ -250,8 +262,12 @@ class MenuRepository extends ChangeNotifier {
   }
 
   void _ensureLanguage(MenuDocument document, String locale) {
-    if (!['en', 'gu', 'hi'].contains(locale)) throw ArgumentError('Choose English, Gujarati or Hindi.');
-    if (!document.languages.contains(locale)) document.languages.add(locale);
+    if (!['en', 'gu', 'hi'].contains(locale)) {
+      throw ArgumentError('Choose English, Gujarati or Hindi.');
+    }
+    if (!document.languages.contains(locale)) {
+      document.languages.add(locale);
+    }
   }
 
   /// Writes a validated temporary file, atomically swaps it, then refreshes recovery copy.
@@ -264,6 +280,8 @@ class MenuRepository extends ChangeNotifier {
     await temporary.writeAsString(encoded, flush: true);
     await temporary.rename(file.path);
     // The backup always contains the most recently completed valid write.
-    if (await file.exists()) await file.copy(backup.path);
+    if (await file.exists()) {
+      await file.copy(backup.path);
+    }
   }
 }
