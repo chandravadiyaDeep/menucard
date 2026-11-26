@@ -4,45 +4,53 @@
 
 ## Repository
 - https://github.com/chandravadiyaDeep/menucard
-- Default branch: main; GitHub Pages enabled for the product landing page.
+- Default branch: main; GitHub Pages hosts the product landing page.
 
-## Architecture decision locked
-- [x] Option B: local JSON + manual static publishing.
-- [x] No MenuCard backend, API server, Worker, cloud database, automatic sync or remote editing.
-- [x] Owner-side logic, validation, local persistence and package generation remain on-device.
-- [x] Static hosting is only a public file origin; owners manually upload and replace the static package.
+## Locked architecture
+- [x] Option B: app-private local JSON as the source of truth.
+- [x] All owner-side business logic runs on-device.
+- [x] Manual export of a static HTML/CSS/JS/JSON package; owner uploads and replaces files.
+- [x] No MenuCard backend, database, Worker, API, automatic upload or synchronization.
 
-## Documentation and static template added
-- [x] Updated README and product requirements for local JSON and manual publishing.
-- [x] Replaced the previous SQLite architecture proposal with the JSON-first architecture.
-- [x] Replaced roadmap with JSON persistence, static customer page and manual publish milestones.
-- [x] Added docs/STATIC_PUBLISHING.md with first-publish, update, revision, cache and troubleshooting steps.
-- [x] Added examples/sample-menu.json.
-- [x] Added static-menu-template with HTML, CSS, browser JavaScript and a sample menu.json.
-- [x] Updated app/README.md to flag the current SQLite scaffold for migration.
+## V1 Flutter implementation added in the working change set
+- [x] Versioned menu document models and JSON validation.
+- [x] Local JSON repository with temporary-file writes and recovery backup.
+- [x] Shop profile editing, category/item create/edit/delete and item availability controls.
+- [x] English/Gujarati/Hindi content selection with owner-entered translations.
+- [x] Optional item photo import and public image packaging.
+- [x] Static customer website assets embedded in the Flutter app.
+- [x] On-device static website ZIP export.
+- [x] Private backup ZIP export and guarded backup restore.
+- [x] Local publish revision state, HTTPS URL confirmation and QR generation.
+- [x] Material 3 owner dashboard with Home, My Menu and Publish navigation.
+- [x] Repository tests for first-run storage, persistence, public export privacy, validation, category deletion, URL confirmation and recovery.
 
-## Current implementation reality
-- The Flutter owner app still uses Drift/SQLite in app/lib and is not yet compliant with the approved JSON-first architecture.
-- The static customer template is a repository prototype; the Android app does not yet export this package.
-- The owner app does not yet have JSON import/export, static package ZIP export, hosted URL confirmation or QR generation.
-- No server-side MenuCard code has been added.
-- The static template has not yet been validated on a real hosting provider or mobile browser.
+## Verification status
+- [ ] Changes have not yet been committed to main.
+- [ ] Flutter formatting/analyzer/tests have not yet been run.
+- [ ] Android APK build has not yet been run.
+- [ ] GitHub Actions candidate build has not yet been confirmed.
+- [ ] No production signing keystore has been configured by the owner.
+- [ ] No physical Android device QA or public static-host upload verification has been completed.
+- [ ] No production APK is currently published.
 
-## Existing verified work
-- GitHub Pages deployment workflow succeeded previously: https://github.com/chandravadiyaDeep/menucard/actions/runs/45868756522
-- GitHub Pages is for the product landing page only; it is not selected as the production host for individual shops.
-- No APK release is currently published. Flutter CI/build/test success is not yet established.
+## Build and release plan
+- CI generates the missing Android platform directory using Flutter stable.
+- Main branch runs format, analyzer, automated tests and a release-mode APK build.
+- Main branch APK artifacts are candidates only and are not treated as production-signed.
+- Version tags require the owner's release keystore and publish the signed APK plus SHA-256 checksum.
+- See app/RELEASE.md for the secure keystore process.
 
-## Next implementation sequence
-1. Replace Drift/SQLite with a versioned JSON-backed local repository and atomic persistence.
-2. Add menu CRUD and tests against the JSON repository.
-3. Build the publish ZIP on-device using the static-menu-template and the public menu snapshot.
-4. Add local publish revision tracking, HTTPS URL confirmation and URL-only QR generation.
-5. Validate package upload/update behavior on a static host that permits the shop's intended commercial use.
-6. Run Flutter analyzer, tests, Android build and device QA; publish an APK only after verified success.
+## Remaining quality gates
+1. Delete obsolete Drift/SQLite sources and complete the JSON-only migration.
+2. Run CI, fix compile/analyzer/test failures and confirm the APK artifact.
+3. Install and test the APK on Android devices: persistence after force-close, menu CRUD, images, backup/restore, sharing and ZIP export.
+4. Upload the package to a suitable commercial static host, verify cache update behavior and scan QR.
+5. Configure signing secrets before creating a production release tag.
 
 ## Guardrails
-- Do not add database dependencies, server-side functions, backend endpoints, API credentials or automatic uploads.
-- Do not claim that exporting a ZIP means the public menu is updated.
-- Keep the local menu safe if export or upload fails.
-- Add useful comments to all new code and update this file after meaningful repository changes.
+- Never call a debug-signed artifact a production APK.
+- Never claim a website ZIP export is a public upload.
+- Never replace failed local JSON with an empty menu without owner consent.
+- Never commit release credentials.
+- Keep the app entirely local-first and add comments to new code.

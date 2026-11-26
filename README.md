@@ -1,26 +1,27 @@
 # MenuCard — Free Digital Menu for Local Shops
 
-A simple, free, offline-first Android app for small local businesses to create and manage a digital menu.
+A polished offline-first Android app for small local businesses to create, manage and manually publish a digital menu.
 
-## Product promise
-- Owners create and edit shop menus on their Android device, including offline.
-- The authoritative data is a versioned JSON document stored locally on-device.
-- Owners manually export a static customer-menu package and upload it to a static hosting provider.
-- Customers scan a QR code and view the latest successfully published static menu.
-- Gujarati, Hindi and English content is entered by the owner; translations are never silently machine-generated.
+## V1 product
+- Edit shop profile, menu categories, items, prices and availability offline.
+- Store the authoritative menu as versioned JSON on the Android device.
+- Add item photos and owner-entered English, Gujarati and Hindi translations.
+- Export a self-contained static website ZIP, then upload it manually to a static hosting provider.
+- Save the public HTTPS URL and generate a QR code. The QR contains only the customer URL.
+- Export and restore a private backup that includes menu data and selected photos.
 
-## Architecture decision
-**Local JSON + manual static publishing (Option B).** No application backend, API server, Worker, cloud database, account service, or automatic synchronization. Static hosting only serves files uploaded by the owner; it runs no MenuCard server-side logic.
+## Architecture
+Option B is locked: local JSON + manual static publishing. No MenuCard backend, API server, Worker, remote database, account system or automatic synchronization. Static hosting only serves static HTML, CSS, JavaScript, JSON and images uploaded by the owner.
 
-The Android app keeps all owner-side business logic and menu editing on-device. See the [publishing workflow](docs/STATIC_PUBLISHING.md), [architecture](docs/ARCHITECTURE.md), and [JSON example](examples/sample-menu.json).
+See [manual publishing instructions](docs/STATIC_PUBLISHING.md), [architecture](docs/ARCHITECTURE.md), and [release instructions](app/RELEASE.md).
 
-## Project status
-The responsive product landing page is deployed through GitHub Pages. The Flutter app is an early prototype; its current persistence code still uses Drift/SQLite and must be migrated to the approved local-JSON design before V1. No APK is currently published.
+## Build status
+The Flutter source is being migrated to the V1 JSON-first architecture. GitHub Actions runs formatting, static analysis, automated tests and an APK build. A passing CI artifact is a release-mode candidate; production signing and physical-device QA are required before production distribution.
 
-See [PRODUCT_REQUIREMENTS.md](docs/PRODUCT_REQUIREMENTS.md), [ROADMAP.md](docs/ROADMAP.md), and [CURRENT_STATE.md](CURRENT_STATE.md).
+## Project links
+- [Current state](CURRENT_STATE.md)
+- [Product requirements](docs/PRODUCT_REQUIREMENTS.md)
+- [Development roadmap](docs/ROADMAP.md)
+- [Sample JSON schema](examples/sample-menu.json)
 
-## Development
-Flutter stable is the Android target. All new code must include useful comments. Do not add backend services or database dependencies without an explicit product decision.
-
-## Free and independent
-MenuCard is independent of any premium restaurant platform. No subscriptions, ordering, checkout, payments, reservations, loyalty, or enterprise analytics.
+MenuCard is independent and free. It does not provide ordering, payments, reservations, loyalty or enterprise analytics.

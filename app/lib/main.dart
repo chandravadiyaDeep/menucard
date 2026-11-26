@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+
 import 'app.dart';
-import 'data/app_database.dart';
+import 'data/menu_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Open local SQLite storage before rendering the owner workspace.
-  final database = AppDatabase();
-  runApp(MenuCardApp(database: database));
+
+  try {
+    // Load the durable local menu before exposing the owner workspace.
+    final repository = await MenuRepository.open();
+    runApp(MenuCardApp(repository: repository));
+  } catch (error) {
+    // Never replace an unreadable menu with an empty document without consent.
+    runApp(MenuCardStartupError(error: error));
+  }
 }
