@@ -1,43 +1,48 @@
 # Current State
 
-**Updated:** 2026-11-26
+**Updated:** 2026-11-27
 
 ## Repository
 - https://github.com/chandravadiyaDeep/menucard
-- Default branch: main; GitHub Pages enabled.
-- Repository was empty at connection time; this is the initial implementation baseline.
+- Default branch: main; GitHub Pages enabled for the product landing page.
 
-## Completed
-- [x] Product requirements and exclusions: `docs/PRODUCT_REQUIREMENTS.md`.
-- [x] Offline-first architecture, SQLite schema and future sync contract: `docs/ARCHITECTURE.md`.
-- [x] UI sitemap and delivery roadmap.
-- [x] Responsive root landing page with a CSS-built menu illustration (no stock images).
-- [x] Download section checks latest GitHub Release and APK asset; falls back to Releases when none exists.
-- [x] GitHub Pages deployment workflow.
-- [x] Flutter foundation: Drift database model, local shop profile edit, category creation, item creation and local preview.
-- [x] Android workflow builds/tests and publishes APK on `v*` tags.
+## Architecture decision locked
+- [x] Option B: local JSON + manual static publishing.
+- [x] No MenuCard backend, API server, Worker, cloud database, automatic sync or remote editing.
+- [x] Owner-side logic, validation, local persistence and package generation remain on-device.
+- [x] Static hosting is only a public file origin; owners manually upload and replace the static package.
 
-## Verification evidence
-- GitHub Pages Actions run #2 completed successfully: https://github.com/chandravadiyaDeep/menucard/actions/runs/45868756522
-- Pages upload and deploy steps succeeded.
-- Release API currently returns an empty list; no downloadable APK has been published yet.
-- Flutter CI has not yet run; no Android build or widget test is claimed as passing.
-- First Pages run failed due artifact lookup; workflow was corrected and run #2 succeeded.
+## Documentation and static template added
+- [x] Updated README and product requirements for local JSON and manual publishing.
+- [x] Replaced the previous SQLite architecture proposal with the JSON-first architecture.
+- [x] Replaced roadmap with JSON persistence, static customer page and manual publish milestones.
+- [x] Added docs/STATIC_PUBLISHING.md with first-publish, update, revision, cache and troubleshooting steps.
+- [x] Added examples/sample-menu.json.
+- [x] Added static-menu-template with HTML, CSS, browser JavaScript and a sample menu.json.
+- [x] Updated app/README.md to flag the current SQLite scaffold for migration.
 
-## Not yet implemented
-- Category/item edit and delete; explicit category deletion handling.
-- Availability editing UI and category ordering.
-- Manual translation editor and localized app UI strings.
-- Backup export/restore.
-- Logo and image picker.
-- QR/link publishing and Android share sheet.
-- Real-device and low-end Android validation.
+## Current implementation reality
+- The Flutter owner app still uses Drift/SQLite in app/lib and is not yet compliant with the approved JSON-first architecture.
+- The static customer template is a repository prototype; the Android app does not yet export this package.
+- The owner app does not yet have JSON import/export, static package ZIP export, hosted URL confirmation or QR generation.
+- No server-side MenuCard code has been added.
+- The static template has not yet been validated on a real hosting provider or mobile browser.
 
-## Important notes
-- Drift schema source: `app/lib/data/app_database.dart`. The generated file must be validated against the pinned Drift generator before relying on it.
-- This is an early foundation, not a release-ready product.
-- A real APK requires successful Android workflow completion and a Release asset.
-- QR remains unavailable until a public HTTPS menu destination is implemented.
+## Existing verified work
+- GitHub Pages deployment workflow succeeded previously: https://github.com/chandravadiyaDeep/menucard/actions/runs/45868756522
+- GitHub Pages is for the product landing page only; it is not selected as the production host for individual shops.
+- No APK release is currently published. Flutter CI/build/test success is not yet established.
 
-## Next action
-Validate Flutter analyzer/build/test in GitHub Actions and fix compile issues, then add edit/delete and backup/restore before a test release.
+## Next implementation sequence
+1. Replace Drift/SQLite with a versioned JSON-backed local repository and atomic persistence.
+2. Add menu CRUD and tests against the JSON repository.
+3. Build the publish ZIP on-device using the static-menu-template and the public menu snapshot.
+4. Add local publish revision tracking, HTTPS URL confirmation and URL-only QR generation.
+5. Validate package upload/update behavior on a static host that permits the shop's intended commercial use.
+6. Run Flutter analyzer, tests, Android build and device QA; publish an APK only after verified success.
+
+## Guardrails
+- Do not add database dependencies, server-side functions, backend endpoints, API credentials or automatic uploads.
+- Do not claim that exporting a ZIP means the public menu is updated.
+- Keep the local menu safe if export or upload fails.
+- Add useful comments to all new code and update this file after meaningful repository changes.
