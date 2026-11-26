@@ -15,6 +15,8 @@ class MenuRepository extends ChangeNotifier {
   final File file;
   MenuDocument _document;
   static const _uuid = Uuid();
+  // Serialize mutations so rapid taps cannot race on the same JSON/temp files.
+  Future<void> _writeQueue = Future<void>.value();
 
   MenuDocument get document => _document;
 
@@ -223,56 +225,67 @@ class MenuRepository extends ChangeNotifier {
     return destination.path;
   }
 
-  Future<void> restoreDocument(MenuDocument restored) async {
-    final next = restored.copy();
-    next.revision = (_document.revision > next.revision ? _document.revision : next.revision) + 1;
-    next.updatedAt = DateTime.now();
-    next.exportedRevision = 0;
-    next.validate();
-    await _write(next);
-    _document = next;
-    notifyListeners();
+  Future<void> restoreDocument(MenuDocument restored) => _enqueueWrite(() async {
+        final next = restored.copy();
+        next.revision = (_document.revision > next.revision ? _document.revision : next.revision) + 1;
+        next.updatedAt = DateTime.now();
+        next.exportedRevision = 0;
+        next.validate();
+        await _write(next);
+        _document = next;
+        notifyListeners();
+      });
+
+  Future<void> recordExported(int revision) => _enqueueWrite(() async {
+        if (revision > _document.revision) {
+          throw ArgumentError('The exported revision is newer than the saved local menu.');
+        }
+        final next = _document.copy();
+        next.exportedRevision = revision;
+        await _write(next);
+        _document = next;
+        notifyListeners();
+      });
+
+  Future<void> confirmPublished(String url) => _enqueueWrite(() async {
+        final uri = Uri.tryParse(url.trim());
+        if (uri == null ||
+            uri.scheme.toLowerCase() != 'https' ||
+            uri.host.isEmpty ||
+            uri.userInfo.isNotEmpty ||
+            uri.hasFragment) {
+          throw ArgumentError('Enter a valid public HTTPS menu URL without credentials or fragments.');
+        }
+        if (_document.exportedRevision != _document.revision) {
+          throw ArgumentError('Export the latest menu revision before confirming it as published.');
+        }
+        final next = _document.copy();
+        next.publishedUrl = uri.toString();
+        next.publishedRevision = next.revision;
+        next.publishedAt = DateTime.now();
+        await _write(next);
+        _document = next;
+        notifyListeners();
+      });
+
+  // Queue file mutations in order while allowing a failed operation to be retried.
+  Future<void> _enqueueWrite(Future<void> Function() operation) {
+    final result = _writeQueue.then((_) => operation());
+    _writeQueue = result.catchError((Object _) {});
+    return result;
   }
 
-  Future<void> recordExported(int revision) async {
-    final next = _document.copy();
-    next.exportedRevision = revision;
-    await _write(next);
-    _document = next;
-    notifyListeners();
-  }
-
-  Future<void> confirmPublished(String url) async {
-    final uri = Uri.tryParse(url.trim());
-    if (uri == null ||
-        uri.scheme.toLowerCase() != 'https' ||
-        uri.host.isEmpty ||
-        uri.userInfo.isNotEmpty ||
-        uri.hasFragment) {
-      throw ArgumentError('Enter a valid public HTTPS menu URL without credentials or fragments.');
-    }
-    if (_document.exportedRevision != _document.revision) {
-      throw ArgumentError('Export the latest menu revision before confirming it as published.');
-    }
-    final next = _document.copy();
-    next.publishedUrl = uri.toString();
-    next.publishedRevision = next.revision;
-    next.publishedAt = DateTime.now();
-    await _write(next);
-    _document = next;
-    notifyListeners();
-  }
-
-  Future<void> _mutate(void Function(MenuDocument next) mutation) async {
-    final next = _document.copy();
-    mutation(next);
-    next.revision = _document.revision + 1;
-    next.updatedAt = DateTime.now();
-    next.validate();
-    await _write(next);
-    _document = next;
-    notifyListeners();
-  }
+  Future<void> _mutate(void Function(MenuDocument next) mutation) =>
+      _enqueueWrite(() async {
+        final next = _document.copy();
+        mutation(next);
+        next.revision = _document.revision + 1;
+        next.updatedAt = DateTime.now();
+        next.validate();
+        await _write(next);
+        _document = next;
+        notifyListeners();
+      });
 
   void _ensureLanguage(MenuDocument document, String locale) {
     if (!['en', 'gu', 'hi'].contains(locale)) {
@@ -292,15 +305,13 @@ class MenuRepository extends ChangeNotifier {
     final encoded = const JsonEncoder.withIndent('  ').convert(document.toStorageJson());
     await temporary.writeAsString(encoded, flush: true);
 
-    // On Android, rename within the same directory atomically replaces the file.
-    await temporary.rename(file.path);
+    // Stage the fully written new snapshot as the recovery copy before replacing main.
+    // If this step fails, the previous primary file remains untouched.
+    final backupTemporary = File('${backup.path}.tmp');
+    await temporary.copy(backupTemporary.path);
+    await backupTemporary.rename(backup.path);
 
-    // Refresh the recovery copy only after the new main document is durable.
-    // A staged backup rename prevents a partial copy replacing the previous backup.
-    if (await file.exists()) {
-      final backupTemporary = File('${backup.path}.tmp');
-      await file.copy(backupTemporary.path);
-      await backupTemporary.rename(backup.path);
-    }
+    // On Android, a same-directory rename atomically replaces the primary JSON file.
+    await temporary.rename(file.path);
   }
 }
