@@ -4,11 +4,21 @@
   let menu = null;
   let activeLocale = "en";
 
-  // Resolve a translated field using the shop's documented fallback order.
+  // Resolve a translated category/item field with the documented fallback order.
   function translated(translations, field) {
     const locales = [activeLocale, menu.default_locale, ...(menu.languages || [])];
     for (const locale of [...new Set(locales)]) {
       const value = translations?.[locale]?.[field];
+      if (typeof value === "string" && value.trim()) return value;
+    }
+    return "";
+  }
+
+  // Shop profile translations are simple locale-to-string values.
+  function translatedShopText(values) {
+    const locales = [activeLocale, menu.default_locale, ...(menu.languages || [])];
+    for (const locale of [...new Set(locales)]) {
+      const value = values?.[locale];
       if (typeof value === "string" && value.trim()) return value;
     }
     return "";
@@ -23,18 +33,15 @@
   }
 
   function render() {
-    $("shop-name").textContent = translated(menu.shop.name, "name") || "Digital Menu";
-    $("shop-description").textContent = translated(menu.shop.description, "description");
+    $("shop-name").textContent = translatedShopText(menu.shop.name) || "Digital Menu";
+    $("shop-description").textContent = translatedShopText(menu.shop.description);
     const meta = [menu.shop.address, menu.shop.phone].filter(Boolean).join(" · ");
     $("shop-meta").textContent = meta;
 
     const content = $("menu-content");
     content.replaceChildren();
     const categories = [...(menu.categories || [])].sort((a, b) => a.sort_order - b.sort_order);
-
-    if (!categories.length) {
-      content.append(element("p", "empty", "This menu has no items yet."));
-    }
+    if (!categories.length) content.append(element("p", "empty", "This menu has no items yet."));
 
     for (const category of categories) {
       const section = element("section", "category");
@@ -83,7 +90,7 @@
 
   async function start() {
     try {
-      // Revalidate the JSON on every page load; the host must also allow cache revalidation.
+      // Revalidate JSON on each page load; the static host must allow cache revalidation too.
       const response = await fetch("menu.json", { cache: "no-store" });
       if (!response.ok) throw new Error("Menu file not found");
       menu = await response.json();
@@ -95,7 +102,7 @@
       for (const locale of languages) {
         const option = document.createElement("option");
         option.value = locale;
-        option.textContent = ({ en: "English", gu: "ગુજરાતી", hi: "हिन्दी" })[locale] || locale;
+        option.textContent = ({ en: "English", gu: "ગુજરાતી", hi: "हिन्दી" })[locale] || locale;
         select.append(option);
       }
       activeLocale = languages.includes(menu.default_locale) ? menu.default_locale : languages[0];
