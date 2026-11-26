@@ -38,13 +38,12 @@ void main() {
     expect(find.text('MenuCard'), findsOneWidget);
     expect(find.textContaining('Your menu,'), findsOneWidget);
     expect(find.text('Test Cafe'), findsOneWidget);
-    expect(find.text('Drinks'), findsOneWidget);
-
     // Verify that the primary navigation opens the real menu editor screen.
     await tester.tap(find.byIcon(Icons.menu_book_rounded));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 350));
     expect(find.text('Build your menu.'), findsOneWidget);
+    expect(find.text('Drinks'), findsOneWidget);
     expect(find.text('Masala Chai'), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox.shrink());
