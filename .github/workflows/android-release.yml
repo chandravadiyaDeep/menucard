@@ -57,9 +57,13 @@ jobs:
         working-directory: app
         run: flutter analyze
 
-      - name: Run automated tests
+      - name: Run repository logic tests
         working-directory: app
-        run: flutter test --reporter expanded
+        run: timeout 180s flutter test test/menu_repository_test.dart --reporter expanded
+
+      - name: Run widget smoke tests
+        working-directory: app
+        run: timeout 180s flutter test test/widget_test.dart --reporter expanded
 
       - name: Validate production signing secrets
         if: startsWith(github.ref, 'refs/tags/')

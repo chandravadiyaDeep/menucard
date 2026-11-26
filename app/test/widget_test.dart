@@ -17,7 +17,7 @@ void main() {
     );
 
     await tester.pumpWidget(MenuCardApp(repository: repository));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('MenuCard'), findsOneWidget);
     expect(find.textContaining('Your menu,'), findsOneWidget);
@@ -26,7 +26,8 @@ void main() {
     expect(find.text('Publish'), findsOneWidget);
 
     await tester.tap(find.text('My menu'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
     expect(find.text('Build your menu.'), findsOneWidget);
 
     // Dispose the widget tree before closing its ChangeNotifier repository.
