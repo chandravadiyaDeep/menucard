@@ -22,6 +22,7 @@ if 'create("release")' not in source:
     source = source.replace(
         "android {",
         """android {
+    // Read signing credentials from the CI-only key.properties file.
     val keystoreProperties = java.util.Properties()
     val keystorePropertiesFile = rootProject.file("key.properties")
     if (keystorePropertiesFile.exists()) {
