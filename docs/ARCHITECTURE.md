@@ -1,43 +1,84 @@
-# Architecture Proposal
+# Architecture — Local JSON and Manual Static Publishing
 
-## Decision
-Use Flutter for Android UI and SQLite through Drift for durable local storage. The first release is backend-free. This makes core owner workflows offline without adding hosting, authentication or sync complexity.
+## Locked decision
+MenuCard V1 uses on-device JSON as its single source of truth. Publishing is manual and produces a static website bundle. There is no backend, API server, Worker, database server, automatic sync, remote write endpoint or account service.
 
-## Layers
-1. Presentation: Flutter screens, navigation, localization and view models.
-2. Domain: shop/menu entities, validation, language fallback and use cases.
-3. Data: Drift repositories, SQLite migrations, file storage and backup import/export.
-4. Platform adapters: Android share sheet, file picker and URL-only QR generation.
+Static hosting is a file origin only: it serves HTML, CSS, JavaScript, JSON and images uploaded by the shop owner. It does not execute MenuCard business logic.
 
-The UI never writes directly to SQLite; repositories own persistence and transactions.
+## System boundaries
 
-## Offline strategy
-- Local SQLite is authoritative for owner edits.
-- No network is needed for launch, profile, categories, items, availability, preview or backup.
-- No hidden sync queue in v1; there is no remote write service in scope.
-- Customer QR access is separate: a scan needs a valid public menu URL and internet.
-- Publishing is a later optional milestone; remote failures must never roll back local edits.
+### Android owner app
+All owner-side application logic runs on-device:
+1. Presentation: Flutter screens, navigation, localization and view state.
+2. Domain: validation, price conversion, language fallback, category/item rules and revision management.
+3. Data: local JSON repository, atomic file persistence, image files and backup import/export.
+4. Publishing: package builder, static asset copier, ZIP export, HTTPS URL validation and QR generation.
+5. Platform adapters: Android file picker, share sheet and storage APIs.
 
-## Future publishing/sync contract (not implemented)
-Use stable UUIDs, revisions and local timestamps. Write outbox records in the same SQLite transaction as local edits. Remote upserts are idempotent by UUID/revision. Compare base revisions; never silently overwrite. Present understandable conflict choices and preserve a recoverable copy. Retry boundedly while connected and expose pending/failed status. Publish read-only customer snapshots; never encode private fields or credentials in QR.
+The UI must call repositories/use cases; it must not write JSON files directly.
 
-## Database design
-- shop_profile: singleton ID, name, logo_path, phone, address, default_locale, theme_id, accent_color, updated_at.
-- menu_categories: UUID, sort_order, created_at, updated_at.
-- menu_items: UUID, category_id FK, price_minor integer (paise), is_available, image_path, sort_order, created_at, updated_at.
-- content_translations: entity_type, entity_id, field_key, locale (gu/hi/en), value; unique by entity/type/field/locale.
-- app_metadata: key/value for schema/export version and backup metadata.
+### Static customer menu
+The exported package contains a static index.html, CSS/JavaScript assets, menu.json and public images. Browser JavaScript parses the JSON and renders the customer menu. The static host only returns files.
 
-Use integer paise to avoid floating-point currency errors. Category deletion is an explicit repository transaction after owner chooses to move or remove child items.
+## On-device data storage
+- Canonical file: app-private shop-menu.json.
+- Optional public images: app-private image directory, referenced by stable relative asset IDs/paths.
+- Local backup: versioned JSON/ZIP export, kept separate from the public publish package.
+- Use stable UUIDs for shop, category and item IDs.
+- Use integer paise (price_minor) to avoid floating-point currency errors.
+- Include schema_version, revision, updated_at, shop, languages and categories with nested items.
+- Persist safely: serialize and validate → write a temporary sibling file → flush/close → retain previous valid file → rename temporary file into place.
+- On startup, validate the file; if the primary is invalid, offer recovery from the last-known-good copy rather than silently resetting it.
+- No SQLite/Drift or other database is part of the approved V1 persistence layer.
 
-## Backup format
-Versioned ZIP: manifest.json (format version/export time/app version), database.json (normalized entities and translations), images/ (referenced local assets). Restore validates archive, version, IDs, foreign keys and file sizes; previews summary; commits transactionally. Failure leaves existing DB unchanged.
+## JSON schema and example
+See [sample-menu.json](../examples/sample-menu.json). The schema is versioned. Unknown future schema versions must be rejected with a clear upgrade message; compatible additive fields may be ignored only when explicitly documented.
 
-## QR and sharing
-Only generate after publishing supplies a valid HTTPS URL. Encode URL only. Share via Android ACTION_SEND.
+## Manual publishing contract
 
-## Privacy/performance
-No mandatory account, analytics SDK, location permission or network permission for core v1. Optional publishing adds narrowly scoped network access later. Resize optional images before storing.
+### Exported package layout
+The exported folder contains:
+- index.html
+- assets/menu.css
+- assets/menu.js
+- assets/images/ for public image files
+- menu.json
 
-## Repository boundaries
-Independent repo, workflows, app ID and release pipeline. No dependencies, database or credentials from a premium restaurant platform.
+The package is self-contained and uses relative paths. It must work when hosted from a subdirectory, not only from a domain root.
+
+### Owner workflow
+1. Edit the menu locally; the app increments the local revision and saves JSON.
+2. Open Publish menu and inspect the customer preview.
+3. Tap Export website package. The app validates public fields and creates a ZIP file.
+4. The owner uploads/extracts the ZIP through a static hosting provider's manual upload/dashboard flow. The provider must allow commercial use and static file hosting under its current terms.
+5. On first publish, the owner copies the resulting HTTPS URL back into MenuCard and confirms that the customer page opens.
+6. MenuCard generates a QR code for that URL. The QR is stable as long as the owner keeps publishing to the same hosted URL/path.
+7. For updates, the owner exports a fresh package and manually replaces the files at the same hosted path. No QR reprint is needed.
+8. The owner returns to MenuCard and marks the exported revision as published only after confirming the upload. The app records the confirmed public URL, revision and confirmation time locally.
+
+### Important status distinction
+- Local revision: newest changes saved on this phone.
+- Exported revision: snapshot packaged for upload.
+- Published revision: revision the owner has manually confirmed is live at the saved URL.
+
+Never infer upload success from file export. If the owner edits after exporting, show that the local revision is newer than the exported/published revision.
+
+## Customer loading and cache behavior
+- Customer page fetches its sibling menu.json using a relative URL, so the bundle works under a subpath.
+- Fetch with browser cache revalidation/no-store where supported.
+- Static host/CDN must revalidate menu.json (for example, no-cache or short-lived caching with ETag). A host that indefinitely caches JSON is not suitable for reliable updates.
+- Include revision and updated timestamp in the customer page so customers can identify the loaded version.
+- If JSON cannot load, show a clear unavailable message; never show a fake or stale menu as current.
+
+## Security and privacy
+- Export only explicitly public shop/menu fields and images.
+- Never export private local file paths, device identifiers, app settings, backup history, tokens or credentials.
+- Anything published is public and downloadable.
+- HTTPS is required for the saved customer URL.
+- No owner authentication is implemented in V1. The hosting provider's dashboard account and its own security controls are the owner's responsibility.
+
+## Migration from current prototype
+The current Flutter scaffold uses Drift/SQLite. That implementation does not match this locked architecture. Before adding more menu features, replace Drift tables/repository with a JSON-backed repository and update tests/dependencies. Do not keep SQLite as a hidden secondary source of truth.
+
+## Non-goals
+No database, backend API, serverless functions, cloud sync, remote menu editing, automatic uploads, real-time collaboration, ordering or payment flows.
