@@ -1,28 +1,28 @@
 # Development Roadmap
 
-## M0 — Scope and architecture
-Requirements, exclusions, architecture, data model, sitemap and acceptance tests. Exit: owner approves docs.
+## M0 — Product and architecture lock
+Requirements, exclusions, local JSON schema, static publishing contract and acceptance tests. Exit: approved Option B architecture is reflected consistently in all docs.
 
-## M1 — UX prototype
-Flutter navigation shell, onboarding, language choice, home and empty states; public one-page GitHub Pages site. Exit: compact and standard phone layouts reviewed.
+## M1 — UX and navigation
+Flutter navigation shell, onboarding, language choice, dashboard, menu editor, customer preview and publish status screen. Keep all owner workflows local.
 
-## M2 — Flutter foundation
-Flutter stable project, app metadata, localization, theme and CI. Exit: successful compile/launch and green CI.
+## M2 — JSON foundation
+Remove Drift/SQLite. Implement versioned JSON models, validation, repository, atomic writes, last-known-good recovery and unit tests. Exit: edits survive force-close/restart with no network.
 
-## M3 — Local database
-Drift/SQLite schema, migrations, repositories and persistence tests. Exit: offline relaunch tests pass.
+## M3 — Menu management
+Shop profile, category/item create/edit/delete/reorder, integer-paise pricing, availability and explicit category deletion handling. Exit: full CRUD and validation tests pass.
 
-## M4 — Menu management
-Shop profile, categories, items, ordering, price, availability and preview. Exit: CRUD/validation and all offline owner workflows pass.
+## M4 — Languages and images
+Gujarati/Hindi/English UI, owner-entered translations, fallback rules, image import/copy/resize and local asset references. Exit: translations and image references survive restart/export.
 
-## M5 — Languages and backups
-Gujarati/Hindi/English UI, owner translation and fallback, versioned export/restore. Exit: localization and round-trip tests pass.
+## M5 — Backup and restore
+Versioned private backup export/import, schema validation, preview-before-restore and safe recovery. Exit: round-trip and corrupted-file tests pass.
 
-## M6 — QR and sharing
-Wait for public publishing URL. Validate HTTPS, encode URL-only QR and share through system sheet. Exit: scan/share tests on Android.
+## M6 — Static customer website
+Build a small responsive customer page that renders a public menu from sibling menu.json; package it with CSS/JS and images. No server-side code. Exit: package works from a nested static path and handles missing/invalid JSON.
 
-## M7 — Optional publishing
-Separate read-only customer menu and reviewed hosting plan. Local data remains authoritative; explicit conflict UI required. No remote sync without product approval.
+## M7 — Manual publishing and QR
+Export ZIP, choose share/save destination, enter/validate HTTPS hosting URL, confirm upload, store local published revision and generate URL-only QR. Document first upload and replacement workflow. Exit: same URL serves the new revision after cache revalidation.
 
 ## M8 — Device QA and release
-Test offline launch, force-close, network interruption, translations, small screens, accessibility and low-end device. Publish signed APK through GitHub Releases. Signing material lives only in Actions secrets, never in Git.
+Test offline editing, app restart, import/export, package extraction, customer page on mobile browsers, QR scanning, host cache behavior, Gujarati/Hindi rendering, small screens and low-end Android. Publish signed APK only after successful CI and device validation.
