@@ -173,7 +173,9 @@ class MenuRepository extends ChangeNotifier {
     await _mutate((next) {
       var removed = false;
       for (final category in next.categories) {
-        removed = category.items.removeWhere((item) => item.id == id) > 0 || removed;
+        final beforeCount = category.items.length;
+        category.items.removeWhere((item) => item.id == id);
+        removed = removed || category.items.length != beforeCount;
       }
       if (!removed) {
         throw ArgumentError('Menu item no longer exists.');
