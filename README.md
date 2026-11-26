@@ -3,18 +3,24 @@
 A simple, free, offline-first Android app for small local businesses to create and manage a digital menu.
 
 ## Product promise
-- Shop owners can manage shop details, categories, items, prices and availability offline.
-- Gujarati, Hindi and English content with explicit owner-entered translations and language fallback.
-- Local data remains the source of truth; public QR links require a published internet destination.
-- No subscriptions, ordering, checkout, payments, reservations, loyalty, or enterprise analytics.
+- Owners create and edit shop menus on their Android device, including offline.
+- The authoritative data is a versioned JSON document stored locally on-device.
+- Owners manually export a static customer-menu package and upload it to a static hosting provider.
+- Customers scan a QR code and view the latest successfully published static menu.
+- Gujarati, Hindi and English content is entered by the owner; translations are never silently machine-generated.
+
+## Architecture decision
+**Local JSON + manual static publishing (Option B).** No application backend, API server, Worker, cloud database, account service, or automatic synchronization. Static hosting only serves files uploaded by the owner; it runs no MenuCard server-side logic.
+
+The Android app keeps all owner-side business logic and menu editing on-device. See the [publishing workflow](docs/STATIC_PUBLISHING.md), [architecture](docs/ARCHITECTURE.md), and [JSON example](examples/sample-menu.json).
 
 ## Project status
-The repository is being initialized. The public one-page site is deployed through GitHub Pages, and the Android build workflow publishes APKs to GitHub Releases. An APK download is shown only after a release containing an APK exists.
+The responsive product landing page is deployed through GitHub Pages. The Flutter app is an early prototype; its current persistence code still uses Drift/SQLite and must be migrated to the approved local-JSON design before V1. No APK is currently published.
 
-See [PRODUCT_REQUIREMENTS.md](docs/PRODUCT_REQUIREMENTS.md), [ARCHITECTURE.md](docs/ARCHITECTURE.md), [ROADMAP.md](docs/ROADMAP.md), and [CURRENT_STATE.md](CURRENT_STATE.md).
+See [PRODUCT_REQUIREMENTS.md](docs/PRODUCT_REQUIREMENTS.md), [ROADMAP.md](docs/ROADMAP.md), and [CURRENT_STATE.md](CURRENT_STATE.md).
 
 ## Development
-Flutter stable is the target. See `app/` for the Android client. Local persistence is SQLite via Drift; no backend is required for core owner workflows.
+Flutter stable is the Android target. All new code must include useful comments. Do not add backend services or database dependencies without an explicit product decision.
 
 ## Free and independent
-This project is independent of any premium restaurant platform. Core functionality is designed to work without a paid service or recurring subscription.
+MenuCard is independent of any premium restaurant platform. No subscriptions, ordering, checkout, payments, reservations, loyalty, or enterprise analytics.
