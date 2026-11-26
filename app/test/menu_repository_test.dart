@@ -215,12 +215,15 @@ void main() {
       available: false,
     );
 
-    expect(drinks.items, isEmpty);
-    expect(snacks.items, hasLength(1));
-    expect(snacks.items.single.id, original.id);
-    expect(snacks.items.single.priceMinor, 3000);
-    expect(snacks.items.single.available, isFalse);
-    expect(snacks.items.single.nameFor('en', 'en'), 'Lemon Soda Large');
+    // Repository mutations replace the document snapshot, so assert against the latest state.
+    final latestDrinks = repository.document.categories.firstWhere((entry) => entry.id == drinks.id);
+    final latestSnacks = repository.document.categories.firstWhere((entry) => entry.id == snacks.id);
+    expect(latestDrinks.items, isEmpty);
+    expect(latestSnacks.items, hasLength(1));
+    expect(latestSnacks.items.single.id, original.id);
+    expect(latestSnacks.items.single.priceMinor, 3000);
+    expect(latestSnacks.items.single.available, isFalse);
+    expect(latestSnacks.items.single.nameFor('en', 'en'), 'Lemon Soda Large');
   });
 
 }
