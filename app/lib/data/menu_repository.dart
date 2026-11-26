@@ -290,15 +290,15 @@ class MenuRepository extends ChangeNotifier {
     final encoded = const JsonEncoder.withIndent('  ').convert(document.toStorageJson());
     await temporary.writeAsString(encoded, flush: true);
 
-    // Preserve the last valid main file before replacing it. The backup copy
-    // is itself staged and renamed so an interrupted copy cannot corrupt it.
+    // On Android, rename within the same directory atomically replaces the file.
+    await temporary.rename(file.path);
+
+    // Refresh the recovery copy only after the new main document is durable.
+    // A staged backup rename prevents a partial copy replacing the previous backup.
     if (await file.exists()) {
       final backupTemporary = File('${backup.path}.tmp');
       await file.copy(backupTemporary.path);
       await backupTemporary.rename(backup.path);
     }
-
-    // On Android, rename within the same directory atomically replaces the file.
-    await temporary.rename(file.path);
   }
 }
