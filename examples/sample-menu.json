@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "shop_id": "shop_01hzy8m4q7",
+  "revision": 1,
+  "updated_at": "2026-11-27T09:00:00+05:30",
+  "currency": "INR",
+  "default_locale": "en",
+  "languages": ["en", "gu", "hi"],
+  "shop": {
+    "name": {
+      "en": "Nukkad Cafe",
+      "gu": "નુક્કડ કેફે",
+      "hi": "नुक्कड़ कैफ़े"
+    },
+    "description": {
+      "en": "Tea, coffee and fresh snacks.",
+      "gu": "ચા, કોફી અને તાજા નાસ્તા.",
+      "hi": "चाय, कॉफी और ताज़ा नाश्ता।"
+    },
+    "address": "Main market",
+    "phone": ""
+  },
+  "categories": [
+    {
+      "id": "cat_hot_drinks",
+      "sort_order": 0,
+      "translations": {
+        "en": {"title": "Hot Drinks"},
+        "gu": {"title": "ગરમ પીણાં"},
+        "hi": {"title": "गर्म पेय"}
+      },
+      "items": [
+        {
+          "id": "item_masala_chai",
+          "sort_order": 0,
+          "price_minor": 1500,
+          "available": true,
+          "image": null,
+          "translations": {
+            "en": {"name": "Masala Chai", "description": "Freshly brewed tea with spices."},
+            "gu": {"name": "મસાલા ચા", "description": "મસાલા સાથે બનાવેલી તાજી ચા."},
+            "hi": {"name": "मसाला चाय", "description": "मसालों के साथ बनी ताज़ा चाय।"}
+          }
+        }
+      ]
+    }
+  ]
+}
