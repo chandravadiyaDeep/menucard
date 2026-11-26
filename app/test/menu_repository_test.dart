@@ -203,7 +203,7 @@ void main() {
       priceMinor: 2000,
       available: true,
     );
-    final original = drinks.items.single;
+    final original = repository.document.categories.firstWhere((entry) => entry.id == drinks.id).items.single;
 
     await repository.saveItem(
       id: original.id,
