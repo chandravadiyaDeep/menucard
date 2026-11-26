@@ -136,6 +136,12 @@ void main() {
     );
     final revision = repository.document.revision;
     await expectLater(repository.confirmPublished('http://example.com'), throwsArgumentError);
+    await expectLater(
+      repository.confirmPublished('https://example.com/menu/'),
+      throwsArgumentError,
+    );
+    // The owner must export this exact revision before confirming the upload.
+    await repository.recordExported(revision);
     await repository.confirmPublished('https://example.com/menu/');
     expect(repository.document.publishedUrl, 'https://example.com/menu/');
     expect(repository.document.publishedRevision, revision);
