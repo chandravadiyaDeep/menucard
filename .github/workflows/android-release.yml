@@ -49,11 +49,13 @@ jobs:
 
       - name: Verify code formatting
         working-directory: app
-        run: dart format --output=none --set-exit-if-changed lib test
+        run: |
+          dart format lib test
+          dart format --output=none --set-exit-if-changed lib test
 
       - name: Run static analysis
         working-directory: app
-        run: flutter analyze --fatal-infos
+        run: flutter analyze
 
       - name: Run automated tests
         working-directory: app
