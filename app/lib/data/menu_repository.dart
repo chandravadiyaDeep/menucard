@@ -171,8 +171,12 @@ class MenuRepository extends ChangeNotifier {
 
   Future<void> deleteItem(String id) async {
     await _mutate((next) {
+      var removed = false;
       for (final category in next.categories) {
-        category.items.removeWhere((item) => item.id == id);
+        removed = category.items.removeWhere((item) => item.id == id) > 0 || removed;
+      }
+      if (!removed) {
+        throw ArgumentError('Menu item no longer exists.');
       }
     });
   }
@@ -238,8 +242,15 @@ class MenuRepository extends ChangeNotifier {
 
   Future<void> confirmPublished(String url) async {
     final uri = Uri.tryParse(url.trim());
-    if (uri == null || uri.scheme != 'https' || uri.host.isEmpty) {
-      throw ArgumentError('Enter a valid public HTTPS menu URL.');
+    if (uri == null ||
+        uri.scheme.toLowerCase() != 'https' ||
+        uri.host.isEmpty ||
+        uri.userInfo.isNotEmpty ||
+        uri.hasFragment) {
+      throw ArgumentError('Enter a valid public HTTPS menu URL without credentials or fragments.');
+    }
+    if (_document.exportedRevision != _document.revision) {
+      throw ArgumentError('Export the latest menu revision before confirming it as published.');
     }
     final next = _document.copy();
     next.publishedUrl = uri.toString();
@@ -278,10 +289,16 @@ class MenuRepository extends ChangeNotifier {
     await file.parent.create(recursive: true);
     final encoded = const JsonEncoder.withIndent('  ').convert(document.toStorageJson());
     await temporary.writeAsString(encoded, flush: true);
-    await temporary.rename(file.path);
-    // The backup always contains the most recently completed valid write.
+
+    // Preserve the last valid main file before replacing it. The backup copy
+    // is itself staged and renamed so an interrupted copy cannot corrupt it.
     if (await file.exists()) {
-      await file.copy(backup.path);
+      final backupTemporary = File('${backup.path}.tmp');
+      await file.copy(backupTemporary.path);
+      await backupTemporary.rename(backup.path);
     }
+
+    // On Android, rename within the same directory atomically replaces the file.
+    await temporary.rename(file.path);
   }
 }
