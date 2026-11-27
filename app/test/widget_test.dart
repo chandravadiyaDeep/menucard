@@ -213,6 +213,7 @@ void main() {
         translationLocale: 'en',
         defaultLocale: 'en',
       );
+      await repository.saveQrMenuUrl('https://example.com/menu');
     });
 
     await tester.pumpWidget(MenuCardApp(repository: repository));
@@ -223,25 +224,18 @@ void main() {
     expect(find.text('Create your menu QR'), findsOneWidget);
     expect(find.text('Export website package'), findsNothing);
     expect(find.text('I uploaded and checked this menu'), findsNothing);
+    expect(find.byKey(const ValueKey('generated-menu-qr')), findsOneWidget);
+    expect(find.byKey(const ValueKey('share-qr-png')), findsOneWidget);
+    expect(find.byKey(const ValueKey('share-qr-pdf')), findsOneWidget);
+    expect(repository.document.qrMenuUrl, 'https://example.com/menu');
 
+    // Invalid input must not replace the last valid, locally saved QR destination.
     final urlField = find.byKey(const ValueKey('qr-menu-url'));
     await tester.enterText(urlField, 'http://example.com/menu');
     await tester.tap(find.byKey(const ValueKey('generate-menu-qr')));
     await tester.pumpAndSettle();
     expect(find.text('Enter a valid public HTTPS menu link.'), findsOneWidget);
     expect(find.byKey(const ValueKey('generated-menu-qr')), findsNothing);
-
-    await tester.enterText(urlField, 'https://example.com/menu');
-    await tester.tap(find.byKey(const ValueKey('generate-menu-qr')));
-    // Let the repository's real local-file write finish outside fake async.
-    await tester.runAsync(() async {
-      await Future<void>.delayed(const Duration(milliseconds: 150));
-    });
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(const ValueKey('generated-menu-qr')), findsOneWidget);
-    expect(find.byKey(const ValueKey('share-qr-png')), findsOneWidget);
-    expect(find.byKey(const ValueKey('share-qr-pdf')), findsOneWidget);
     expect(repository.document.qrMenuUrl, 'https://example.com/menu');
 
     await tester.pumpWidget(const SizedBox.shrink());
