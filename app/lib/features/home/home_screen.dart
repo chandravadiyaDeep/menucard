@@ -1306,8 +1306,14 @@ class _GuidedSetupDialog extends StatefulWidget {
 class _GuidedSetupDialogState extends State<_GuidedSetupDialog> {
   final _shopNameController = TextEditingController();
   final _phoneController = TextEditingController();
-  late String _language = widget.initialLanguage;
+  late String _language;
   String _shopType = 'cafe';
+
+  @override
+  void initState() {
+    super.initState();
+    _language = widget.initialLanguage;
+  }
 
   @override
   void dispose() {
