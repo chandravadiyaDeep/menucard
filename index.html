@@ -66,7 +66,7 @@
   </section>
   <section id="download" class="wrap">
     <div class="download">
-      <div><h2>A better menu starts here.</h2><p>Get MenuCard for Android. Download the latest Android APK. This page checks the official GitHub release automatically, so the download stays current.</p><div class="release-meta" id="releaseMeta">Checking for the latest Android release…</div><div class="status" id="releaseStatus" role="status" aria-live="polite">Looking for an APK release.</div></div>
+      <div><h2>A better menu starts here.</h2><p>Get MenuCard for Android. Download the latest release-mode test APK after automated checks pass. This page checks the official GitHub release automatically. It is for device testing, not Play Store distribution.</p><div class="release-meta" id="releaseMeta">Checking for the latest Android release…</div><div class="status" id="releaseStatus" role="status" aria-live="polite">Looking for an APK release.</div></div>
       <a class="btn" id="downloadButton" href="https://github.com/chandravadiyaDeep/menucard/releases" target="_blank" rel="noopener">View releases ↗</a>
     </div>
   </section>
@@ -106,7 +106,7 @@
       button.textContent = "↓  Download APK";
       button.setAttribute("download", apk.name);
       meta.textContent = (release.name || release.tag_name) + " · " + apk.name + " · " + (apk.size / 1048576).toFixed(1) + " MB";
-      status.textContent = "Latest Android build is available. Opens the official GitHub release asset.";
+      status.textContent = "Latest Android test build is available. Opens the official GitHub release asset.";
     } catch (error) {
       button.href = releasesUrl;
       button.textContent = "View releases ↗";
