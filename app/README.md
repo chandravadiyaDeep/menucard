@@ -1,6 +1,6 @@
 # MenuCard Android application
 
-Flutter owner app that turns a shop profile and its dishes/prices into a ready-made digital menu, then manually publishes it as a static website ZIP.
+Flutter owner app for building a shop profile and ready-made digital menu, previewing the customer experience, and generating a shareable QR code for an existing public menu URL.
 
 ## Architecture
 - The source of truth is one schema-versioned JSON file in app-private storage.
