@@ -117,7 +117,7 @@ class _QrMenuScreenState extends State<QrMenuScreen> {
                   pw.Text(
                     'SCAN TO VIEW OUR MENU',
                     textAlign: pw.TextAlign.center,
-                    style: pw.TextStyle(
+                    style: const pw.TextStyle(
                       fontSize: 18,
                       fontWeight: pw.FontWeight.bold,
                     ),
