@@ -15,7 +15,11 @@ class OfflineAccountRepository {
 
   static Future<OfflineAccountRepository> open() async {
     final directory = await getApplicationSupportDirectory();
-    final file = File(p.join(directory.path, 'accounts.json'));
+    return openAt(File(p.join(directory.path, 'accounts.json')));
+  }
+
+  /// File-injected constructor keeps persistence deterministic in automated tests.
+  static Future<OfflineAccountRepository> openAt(File file) async {
     if (!await file.exists()) {
       final initial = <String, dynamic>{
         'schema_version': 1,
@@ -75,7 +79,9 @@ class OfflineAccountRepository {
         break;
       }
     }
-    if (match == null) throw StateError('This code is invalid, already used, or not issued on this device.');
+    if (match == null) {
+      throw StateError('This code is invalid, already used, or not issued on this device.');
+    }
     final accountId = _randomHex(16);
     match['status'] = 'claimed';
     match['claimed_by'] = accountId;
@@ -101,12 +107,37 @@ class OfflineAccountRepository {
 
   Future<void> restoreRecoveryJson(String contents) async {
     final decoded = jsonDecode(contents);
-    if (decoded is! Map<String, dynamic> || decoded['schema_version'] != 1 ||
-        decoded['issued_codes'] is! List || decoded['accounts'] is! List) {
+    if (decoded is! Map<String, dynamic> ||
+        decoded['schema_version'] != 1 ||
+        decoded['issued_codes'] is! List ||
+        decoded['accounts'] is! List) {
       throw const FormatException('This is not a valid MenuCard account recovery file.');
     }
+    // Validate record shape before replacing the current account registry.
+    for (final record in decoded['issued_codes'] as List) {
+      if (record is! Map ||
+          record['salt'] is! String ||
+          record['hash'] is! String ||
+          record['status'] is! String) {
+        throw const FormatException('The recovery file contains an invalid issued-code record.');
+      }
+    }
+    for (final account in decoded['accounts'] as List) {
+      if (account is! Map ||
+          account['id'] is! String ||
+          account['mobile'] is! String ||
+          account['shop_name'] is! String) {
+        throw const FormatException('The recovery file contains an invalid account record.');
+      }
+    }
+    final previous = _state;
     _state = decoded;
-    await _save();
+    try {
+      await _save();
+    } catch (_) {
+      _state = previous;
+      rethrow;
+    }
   }
 
   Future<void> _save() async {
