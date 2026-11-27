@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../data/menu_document.dart';
+import '../../design/menu_template_catalog.dart';
 
 /// Renders the exact static customer website inside a local WebView.
 class CustomerMenuPreviewScreen extends StatefulWidget {
@@ -82,7 +83,7 @@ class _CustomerMenuPreviewScreenState extends State<CustomerMenuPreviewScreen> {
 
       final controller = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        ..setBackgroundColor(Color(widget.document.templateId == 'classic-midnight' ? 0xFF111827 : 0xFFF4F5ED))
+        ..setBackgroundColor(Color(MenuTemplateCatalog.byId(widget.document.templateId).backgroundColor))
         ..setNavigationDelegate(NavigationDelegate(
           onNavigationRequest: (request) => request.url.startsWith('data:') || request.url.startsWith('about:')
               ? NavigationDecision.navigate
