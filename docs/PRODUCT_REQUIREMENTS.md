@@ -4,16 +4,18 @@
 MenuCard is an independent, free digital menu app for small local shops: food stalls, tea/coffee shops, snack shops, bakeries and small cafés. It is not a restaurant-management or ordering platform.
 
 ## Locked V1 architecture
-- The Android app owns all menu-editing, validation, localization, packaging and publishing-preparation logic.
-- The authoritative shop profile and menu are stored as a versioned JSON document in the app's private on-device storage.
+- The Android app owns shop onboarding, menu editing, validation, localization, template selection, live preview, packaging and publishing-preparation logic.
+- The authoritative shop profile, menu content and selected template ID are stored as a versioned JSON document in the app's private on-device storage.
 - The app works offline for all owner operations.
 - Publishing is a deliberate manual export-and-upload action. The app creates a static website package; the owner uploads it using a static hosting provider's dashboard/file-upload workflow.
-- The public package consists only of static HTML, CSS, JavaScript, JSON and optional image files. It contains no server-side code and requires no database.
+- The public package consists only of static HTML, CSS, JavaScript, JSON and optional image files. Its browser-side template renderer reads the selected template ID and automatically places the shop/menu content into the chosen layout. It contains no server-side code and requires no database.
 - Customer access is read-only and served by static hosting. The customer page fetches the published JSON file.
 - There is no backend, API server, Worker, database service, account system, automatic sync or remote editing.
 
 ## Goals
-- Let non-technical owners create and maintain a menu on-device.
+- Let non-technical owners create a shop profile, add their dishes/prices and receive a finished menu design without learning graphic design.
+- Offer at least 100 ready-made menu designs in V1. The initial library combines 10 layout families with 12 curated color systems (120 selectable combinations).
+- Automatically bind the owner's real shop name, categories, dishes, descriptions, prices and images into the selected template. Owners enter content once; they do not retype it into each design.
 - Keep owner workflows available without internet.
 - Support Gujarati, Hindi and English with owner-entered translations.
 - Let owners publish a customer-facing QR menu without server-side application code.
@@ -41,8 +43,17 @@ Support Gujarati, Hindi and English. Owners enter translations manually; no auto
 - Keep a recoverable previous copy and support explicit backup export/import.
 - Never require network access for editing, preview, backup or restore.
 
+### Ready-made template system
+- The template catalog is independent of shop content. A template defines layout family, typography hierarchy, spacing, visual treatment and color tokens; it never owns dish names or prices.
+- V1 includes 10 layout families (Classic, Editorial, Compact, Photo, Chalkboard, Luxury, Modern, Rustic, Bistro and Street food) and 12 color themes, giving 120 ready-made combinations.
+- Shop profile and menu entry are completed before a design can be applied in the guided setup flow.
+- Selecting a template stores only its stable template ID. The rendering engine automatically binds the current shop/menu JSON into the design.
+- Editing a shop name, dish, description, image, availability or price updates the same template on the next preview/export. Switching templates never changes or duplicates menu content.
+- Template IDs and presentation settings are included in public menu JSON; private setup state is not exported.
+- Owners can switch templates at any time without rebuilding the menu content.
+
 ### Customer preview
-A customer-style preview reads the same local JSON document and works offline.
+A customer-style preview reads the same local JSON document and selected template, and works offline.
 
 ### Manual publishing
 - Export a ZIP/folder containing index.html, static viewer assets, menu.json and referenced public images.
