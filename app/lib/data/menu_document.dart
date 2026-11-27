@@ -136,8 +136,236 @@ class MenuDocument {
     if (languages.isEmpty || languages.any((language) => !['en', 'gu', 'hi'].contains(language))) {
       throw const FormatException('The menu contains an unsupported language.');
     }
-    if (!RegExp(r'^[a-z]+-[a-z]+$').hasMatch(templateId)) {
+    if (!RegExp(r'^[a-z]+-[a-z]+    if (categories.length > 500) {
+      throw const FormatException('A menu can contain at most 500 categories.');
+    }
+
+    final categoryIds = <String>{};
+    final itemIds = <String>{};
+    var totalItems = 0;
+    for (final category in categories) {
+      if (category.id.isEmpty || !categoryIds.add(category.id)) {
+        throw const FormatException('The menu contains a duplicate or empty category ID.');
+      }
+      if (category.translations.values.every((value) => (value['title'] ?? '').trim().isEmpty)) {
+        throw const FormatException('Every category needs a title in at least one language.');
+      }
+      totalItems += category.items.length;
+      for (final item in category.items) {
+        if (item.id.isEmpty || !itemIds.add(item.id) || item.priceMinor < 0) {
+          throw const FormatException('A menu item has an invalid ID or price.');
+        }
+        if (item.translations.values.every((value) => (value['name'] ?? '').trim().isEmpty)) {
+          throw const FormatException('Every menu item needs a name in at least one language.');
+        }
+        final imagePath = item.imagePath;
+        if (imagePath != null &&
+            (imagePath.contains('..') || imagePath.trim().isEmpty || !imagePath.startsWith('/'))) {
+          throw const FormatException('A menu image reference is invalid.');
+        }
+      }
+    }
+    if (totalItems > 5000) {
+      throw const FormatException('A menu can contain at most 5,000 items.');
+    }
+  }
+}
+
+class ShopProfile {
+  ShopProfile({
+    Map<String, String>? name,
+    Map<String, String>? description,
+    this.address = '',
+    this.phone = '',
+  })  : name = name ?? <String, String>{'en': ''},
+        description = description ?? <String, String>{};
+
+  Map<String, String> name;
+  Map<String, String> description;
+  String address;
+  String phone;
+
+  factory ShopProfile.fromJson(Map<String, dynamic> json) => ShopProfile(
+        name: _stringMap(json['name']),
+        description: _stringMap(json['description']),
+        address: json['address']?.toString() ?? '',
+        phone: json['phone']?.toString() ?? '',
+      );
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'description': description,
+        'address': address,
+        'phone': phone,
+      };
+}
+
+class MenuCategory {
+  MenuCategory({
+    required this.id,
+    required this.sortOrder,
+    required this.translations,
+    List<MenuItem>? items,
+  }) : items = items ?? [];
+
+  String id;
+  int sortOrder;
+  Map<String, Map<String, String>> translations;
+  List<MenuItem> items;
+
+  factory MenuCategory.fromJson(Map<String, dynamic> json) => MenuCategory(
+        id: _requiredString(json['id'], 'category.id'),
+        sortOrder: _nonNegativeInt(json['sort_order']),
+        translations: _translationMap(json['translations']),
+        items: (json['items'] as List? ?? const [])
+            .map((value) => MenuItem.fromJson(_asMap(value, 'item')))
+            .toList(),
+      );
+
+  String titleFor(String locale, String fallback) =>
+      _translatedValue(translations, 'title', locale, fallback);
+
+  Map<String, dynamic> toStorageJson() => {
+        'id': id,
+        'sort_order': sortOrder,
+        'translations': translations,
+        'items': items.map((item) => item.toStorageJson()).toList(),
+      };
+
+  Map<String, dynamic> toPublicJson() => {
+        'id': id,
+        'sort_order': sortOrder,
+        'translations': translations,
+        'items': items.map((item) => item.toPublicJson()).toList(),
+      };
+}
+
+class MenuItem {
+  MenuItem({
+    required this.id,
+    required this.sortOrder,
+    required this.priceMinor,
+    required this.available,
+    required this.translations,
+    this.imagePath,
+  });
+
+  String id;
+  int sortOrder;
+  int priceMinor;
+  bool available;
+  Map<String, Map<String, String>> translations;
+  String? imagePath;
+
+  factory MenuItem.fromJson(Map<String, dynamic> json) => MenuItem(
+        id: _requiredString(json['id'], 'item.id'),
+        sortOrder: _nonNegativeInt(json['sort_order']),
+        priceMinor: _nonNegativeInt(json['price_minor']),
+        available: json['available'] != false,
+        translations: _translationMap(json['translations']),
+        imagePath: json['image_path']?.toString(),
+      );
+
+  String nameFor(String locale, String fallback) =>
+      _translatedValue(translations, 'name', locale, fallback);
+
+  String descriptionFor(String locale, String fallback) =>
+      _translatedValue(translations, 'description', locale, fallback);
+
+  Map<String, dynamic> toStorageJson() => {
+        'id': id,
+        'sort_order': sortOrder,
+        'price_minor': priceMinor,
+        'available': available,
+        'image_path': imagePath,
+        'translations': translations,
+      };
+
+  Map<String, dynamic> toPublicJson() {
+    final name = imagePath?.split(RegExp(r'[/\\]')).last;
+    return {
+      'id': id,
+      'sort_order': sortOrder,
+      'price_minor': priceMinor,
+      'available': available,
+      'image': name == null ? null : 'assets/images/$name',
+      'translations': translations,
+    };
+  }
+}
+
+String _translatedValue(
+  Map<String, Map<String, String>> translations,
+  String field,
+  String locale,
+  String fallback,
+) {
+  for (final language in <String>{locale, fallback, ...translations.keys}) {
+    final value = translations[language]?[field];
+    if (value != null && value.trim().isNotEmpty) return value;
+  }
+  return '';
+}
+
+Map<String, String> _stringMap(dynamic value) {
+  if (value is! Map) {
+    return {};
+  }
+  return value.map((key, item) => MapEntry(key.toString(), item?.toString() ?? ''));
+}
+
+Map<String, Map<String, String>> _translationMap(dynamic value) {
+  if (value is! Map) return {};
+  final output = <String, Map<String, String>>{};
+  for (final entry in value.entries) {
+    output[entry.key.toString()] = _stringMap(entry.value);
+  }
+  return output;
+}
+
+Map<String, dynamic> _asMap(dynamic value, String field) {
+  if (value is! Map) {
+    throw FormatException('The $field data is invalid.');
+  }
+  return Map<String, dynamic>.from(value);
+}
+
+String _requiredString(dynamic value, String field) {
+  final text = value?.toString().trim() ?? '';
+  if (text.isEmpty) {
+    throw FormatException('The $field field is missing.');
+  }
+  return text;
+}
+
+int _positiveInt(dynamic value) {
+  final result = value is int ? value : int.tryParse(value?.toString() ?? '');
+  if (result == null || result < 1) {
+    throw const FormatException('A positive integer value is required.');
+  }
+  return result;
+}
+
+int _nonNegativeInt(dynamic value) {
+  final result = value is int ? value : int.tryParse(value?.toString() ?? '');
+  if (result == null || result < 0) {
+    throw const FormatException('A non-negative integer value is required.');
+  }
+  return result;
+}
+).hasMatch(templateId)) {
       throw const FormatException('The selected menu design is invalid.');
+    }
+    final qrUrl = qrMenuUrl;
+    if (qrUrl != null) {
+      final uri = Uri.tryParse(qrUrl);
+      if (uri == null ||
+          uri.scheme.toLowerCase() != 'https' ||
+          uri.host.isEmpty ||
+          uri.userInfo.isNotEmpty ||
+          uri.hasFragment) {
+        throw const FormatException('The saved menu QR link is invalid.');
+      }
     }
     if (categories.length > 500) {
       throw const FormatException('A menu can contain at most 500 categories.');
