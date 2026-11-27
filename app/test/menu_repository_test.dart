@@ -128,6 +128,26 @@ void main() {
     expect(repository.document.categories, isEmpty);
   });
 
+  test('QR menu link saves locally without requiring a website publish confirmation', () async {
+    await repository.saveQrMenuUrl('https://example.com/menu');
+
+    expect(repository.document.qrMenuUrl, 'https://example.com/menu');
+    expect(repository.document.publishedUrl, isNull);
+
+    final reloaded = await MenuRepository.openAt(file);
+    expect(reloaded.document.qrMenuUrl, 'https://example.com/menu');
+    reloaded.dispose();
+
+    await expectLater(
+      repository.saveQrMenuUrl('http://example.com/menu'),
+      throwsArgumentError,
+    );
+    await expectLater(
+      repository.saveQrMenuUrl('https://user:password@example.com/menu'),
+      throwsArgumentError,
+    );
+  });
+
   test('published confirmation requires HTTPS and does not change menu revision', () async {
     await repository.saveShop(
       name: 'Demo Shop',
