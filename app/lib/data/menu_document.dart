@@ -136,7 +136,24 @@ class MenuDocument {
     if (languages.isEmpty || languages.any((language) => !['en', 'gu', 'hi'].contains(language))) {
       throw const FormatException('The menu contains an unsupported language.');
     }
-    if (!RegExp(r'^[a-z]+-[a-z]+    if (categories.length > 500) {
+    if (!RegExp(r'^[a-z]+-[a-z]+$').hasMatch(templateId)) {
+      throw const FormatException('The selected menu design is invalid.');
+    }
+
+    // The saved QR destination is private local metadata and must always be HTTPS.
+    final qrUrl = qrMenuUrl;
+    if (qrUrl != null) {
+      final uri = Uri.tryParse(qrUrl);
+      if (uri == null ||
+          uri.scheme.toLowerCase() != 'https' ||
+          uri.host.isEmpty ||
+          uri.userInfo.isNotEmpty ||
+          uri.hasFragment) {
+        throw const FormatException('The saved menu QR link is invalid.');
+      }
+    }
+
+    if (categories.length > 500) {
       throw const FormatException('A menu can contain at most 500 categories.');
     }
 
