@@ -533,6 +533,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _menuFilterChip(String label, String value, bool selected, VoidCallback onTap) => Padding(
         padding: const EdgeInsets.only(right: 6, bottom: 5),
         child: ChoiceChip(
+          key: ValueKey(value),
           label: Text(label, overflow: TextOverflow.ellipsis),
           selected: selected,
           onSelected: (_) => onTap(),
@@ -1044,6 +1045,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (approved == true) {
       try {
         await widget.repository.deleteCategory(category.id, deleteItems: true);
+        if (_categoryFilter == category.id) setState(() => _categoryFilter = 'all');
         _message('Category deleted.');
       } catch (error) {
         _message(_cleanError(error));
