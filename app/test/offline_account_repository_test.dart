@@ -20,6 +20,18 @@ void main() {
     }
   });
 
+
+  test('grandfathers existing installations without requiring a new access code', () async {
+    final legacyFile = File('${sandbox.path}/legacy-accounts.json');
+    final legacy = await OfflineAccountRepository.openAt(
+      legacyFile,
+      grandfatherExistingInstall: true,
+    );
+
+    expect(legacy.hasAccount, isTrue);
+    expect(legacy.accounts.single['activation_type'], 'legacy_existing_install');
+  });
+
   test('creates a private versioned JSON account registry', () async {
     expect(await accountFile.exists(), isTrue);
     expect(repository.hasAccount, isFalse);
