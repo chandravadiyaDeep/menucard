@@ -35,15 +35,20 @@
 - [x] Repository tests for first-run storage, persistence, public export privacy, validation, category deletion, URL confirmation, recovery, concurrent writes and item edit/move behavior.
 - [x] Dashboard widget smoke test.
 
-## V1.1.1 preview/search/editor work (feature branch)
-- [x] Full-screen customer preview uses the same bundled HTML/CSS/JavaScript renderer as the static exported website.
-- [x] Preview injects the local public JSON snapshot and embeds local photos as data URLs; no server or network is needed.
-- [x] Owner menu search covers dish names/descriptions across translations and category names.
-- [x] Owner filters by category and availability; customer menu has live search.
-- [x] Price input limits values to two decimal places and item deletion requires confirmation.
-- [x] Added Node renderer test and CI workflow to format/analyze/test/build Android APK and publish the verified APK as a GitHub Release asset.
-- [x] Marketing page resolves the latest official release APK dynamically.
-- [ ] PR CI, release APK, GitHub Release asset and live Pages download link still require verification.
+## V1.1.2 customer preview/search/editor polish (main)
+- [x] Full-screen customer preview uses the same bundled HTML/CSS/JavaScript renderer as the exported static website.
+- [x] Preview is reachable from Home, My menu and Designs.
+- [x] Preview injects the current local JSON snapshot and embeds local photos as data URLs; no server or network is needed.
+- [x] Preview photo lookup is indexed by item ID to avoid repeated full-menu scans.
+- [x] WebView navigation is restricted to the local preview origin and embedded content.
+- [x] Owner menu search covers saved translations of item names/descriptions and category names.
+- [x] Category and availability filters include a one-tap clear-all action.
+- [x] Customer static menu includes live search.
+- [x] Price input is constrained to two decimal places; item deletion requires confirmation; availability can be toggled from item actions.
+- [x] Widget tests cover preview entry points, search, filter reset and availability filtering; Node tests exercise the actual customer renderer.
+- [x] GitHub Actions workflow checks formatting, static analysis, Flutter tests, JavaScript syntax, renderer tests and release-mode APK build.
+- [x] Website download section resolves the latest GitHub Release APK dynamically.
+- [ ] V1.1.2 quality run, APK upload and public website download must complete before claiming the new APK is live.
 
 ## Template-first implementation verification
 - [x] Template gallery, template persistence, 120-design catalog and static customer renderer passed Flutter formatting, static analysis and automated tests in Android workflow run #35.
