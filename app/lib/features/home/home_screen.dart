@@ -2,12 +2,12 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 
 import 'customer_menu_preview_screen.dart';
+import 'qr_menu_screen.dart';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../data/menu_document.dart';
@@ -27,8 +27,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _tab = 0;
   String _locale = 'en';
-  late final TextEditingController _urlController;
-  bool _isExporting = false;
   String _templateLayoutFilter = 'All';
   String _menuSearch = '';
   String _availabilityFilter = 'all';
@@ -41,13 +39,11 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _locale = _document.defaultLocale;
-    _urlController = TextEditingController(text: _document.publishedUrl ?? '');
     _searchController = TextEditingController();
   }
 
   @override
   void dispose() {
-    _urlController.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -80,6 +76,31 @@ class _HomeScreenState extends State<HomeScreen> {
                   tooltip: 'Shop profile',
                   onPressed: _showShopDialog,
                   icon: const Icon(Icons.storefront_outlined),
+                ),
+                PopupMenuButton<String>(
+                  tooltip: 'Backup options',
+                  onSelected: (value) {
+                    if (value == 'backup') _exportBackup();
+                    if (value == 'restore') _restoreBackup();
+                  },
+                  itemBuilder: (context) => const [
+                    PopupMenuItem(
+                      value: 'backup',
+                      child: ListTile(
+                        leading: Icon(Icons.backup_outlined),
+                        title: Text('Export private backup'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'restore',
+                      child: ListTile(
+                        leading: Icon(Icons.restore_rounded),
+                        title: Text('Restore from backup'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(width: 6),
               ],
@@ -825,110 +846,24 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Widget _publishPage(MenuDocument document) {
-    final hasLiveUrl = document.publishedUrl != null;
-    final currentIsPublished = hasLiveUrl && document.publishedRevision == document.revision;
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(18, 10, 18, 28),
-      children: [
-        const Text('GO LIVE, YOUR WAY', style: TextStyle(fontSize: 10, letterSpacing: 1.35, fontWeight: FontWeight.w900, color: Color(0xFF6B786F))),
-        const SizedBox(height: 6),
-        const Text('Your QR menu.', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, letterSpacing: -.9)),
-        const SizedBox(height: 7),
-        const Text('Publish a static website package. You stay in control: export it, upload it yourself and keep the same QR link for updates.', style: TextStyle(color: Color(0xFF78827B), height: 1.5, fontSize: 12)),
-        const SizedBox(height: 18),
-        Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(color: const Color(0xFFE8EEE7), borderRadius: BorderRadius.circular(22)),
-          child: Row(children: [
-            const Icon(Icons.cloud_done_outlined, color: Color(0xFF285C47), size: 25),
-            const SizedBox(width: 12),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(currentIsPublished ? 'Your latest menu is marked live' : hasLiveUrl ? 'You have unpublished changes' : 'Ready when you are',
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Color(0xFF173F33))),
-              const SizedBox(height: 3),
-              Text('Local revision ${document.revision} · Published revision ${document.publishedRevision}', style: const TextStyle(fontSize: 10, color: Color(0xFF5E7064))),
-            ])),
-          ]),
-        ),
-        const SizedBox(height: 17),
-        _stepCard('01', 'Export the website', 'MenuCard builds a ZIP with your menu.json, website and item photos. Nothing is uploaded automatically.'),
-        const SizedBox(height: 10),
-        _stepCard('02', 'Upload it yourself', 'Use your static hosting provider dashboard. Replace the previous files in the same folder to keep your QR link unchanged.'),
-        const SizedBox(height: 10),
-        _stepCard('03', 'Confirm your public link', 'Open the hosted page, check the menu and paste its HTTPS URL below.'),
-        const SizedBox(height: 18),
-        FilledButton.icon(
-          onPressed: _isExporting ? null : _exportWebsite,
-          icon: _isExporting ? const SizedBox(width: 17, height: 17, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Icon(Icons.file_download_outlined),
-          label: Text(_isExporting ? 'Preparing package…' : 'Export website package'),
-        ),
-        const SizedBox(height: 20),
-        const Text('PUBLIC MENU URL', style: TextStyle(fontSize: 10, letterSpacing: 1.1, fontWeight: FontWeight.w900, color: Color(0xFF68756D))),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _urlController,
-          keyboardType: TextInputType.url,
-          textInputAction: TextInputAction.done,
-          decoration: const InputDecoration(prefixIcon: Icon(Icons.link), hintText: 'https://your-shop.example.com'),
-        ),
-        const SizedBox(height: 10),
-        OutlinedButton.icon(
-          onPressed: _confirmPublished,
-          icon: const Icon(Icons.verified_outlined),
-          label: const Text('I uploaded and checked this menu'),
-        ),
-        if (hasLiveUrl) ...[
-          const SizedBox(height: 18),
-          Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(color: const Color(0xFFFFFEFA), borderRadius: BorderRadius.circular(22), border: Border.all(color: const Color(0xFFE7E5DC))),
-            child: Column(children: [
-              const Text('YOUR CUSTOMER QR CODE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1, fontSize: 10)),
-              const SizedBox(height: 12),
-              QrImageView(data: document.publishedUrl!, version: QrVersions.auto, size: 210, backgroundColor: Colors.white),
-              const SizedBox(height: 9),
-              SelectableText(document.publishedUrl!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, color: Color(0xFF647168))),
-              const SizedBox(height: 5),
-              Text('Confirmed revision ${document.publishedRevision}', style: const TextStyle(fontSize: 10, color: Color(0xFF3A7955), fontWeight: FontWeight.w800)),
-              TextButton.icon(onPressed: _shareMenuLink, icon: const Icon(Icons.share_outlined, size: 16), label: const Text('Share menu link')),
-            ]),
-          ),
-        ],
-        const SizedBox(height: 16),
-        OutlinedButton.icon(onPressed: _exportBackup, icon: const Icon(Icons.backup_outlined), label: const Text('Export private backup')),
-        const SizedBox(height: 8),
-        TextButton.icon(onPressed: _restoreBackup, icon: const Icon(Icons.restore), label: const Text('Restore from backup')),
-        const SizedBox(height: 12),
-        const Text('Publishing is manual. MenuCard never stores a hosting password, uploads for you or runs a server. Only information in the website package becomes public.',
-            textAlign: TextAlign.center, style: TextStyle(fontSize: 10, color: Color(0xFF818A83), height: 1.5)),
-      ],
-    );
-  }
-
-  Widget _stepCard(String number, String title, String detail) => Container(
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(color: const Color(0xFFFFFEFA), borderRadius: BorderRadius.circular(17), border: Border.all(color: const Color(0xFFE7E5DC))),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Container(width: 30, height: 30, alignment: Alignment.center, decoration: BoxDecoration(color: const Color(0xFFE8EEE7), borderRadius: BorderRadius.circular(10)), child: Text(number, style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF285C47), fontSize: 11))),
-          const SizedBox(width: 11),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
-            const SizedBox(height: 3),
-            Text(detail, style: const TextStyle(color: Color(0xFF78827B), fontSize: 11, height: 1.45)),
-          ])),
-        ]),
+  Widget _publishPage(MenuDocument document) => QrMenuScreen(
+        repository: widget.repository,
+        locale: _locale,
       );
 
   Widget _publishStatus(MenuDocument document) {
-    final pending = document.publishedUrl == null || document.publishedRevision != document.revision;
+    final qrReady = (document.qrMenuUrl ?? document.publishedUrl)?.isNotEmpty == true;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(color: const Color(0xFFFFFEFA), borderRadius: BorderRadius.circular(18), border: Border.all(color: const Color(0xFFE7E5DC))),
       child: Row(children: [
-        Icon(pending ? Icons.pending_actions_rounded : Icons.check_circle_outline, color: pending ? const Color(0xFF9B7542) : const Color(0xFF3A7955)),
+        Icon(qrReady ? Icons.qr_code_2_rounded : Icons.qr_code_2_outlined,
+            color: qrReady ? const Color(0xFF3A7955) : const Color(0xFF9B7542)),
         const SizedBox(width: 10),
-        Expanded(child: Text(pending ? 'Your latest edits have not been published yet.' : 'Your latest published revision is up to date.', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700))),
+        Expanded(child: Text(
+          qrReady ? 'Your menu QR link is saved on this device.' : 'Add your public menu link to create a QR code.',
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+        )),
       ]),
     );
   }
@@ -1217,26 +1152,6 @@ class _HomeScreenState extends State<HomeScreen> {
     price.dispose();
   }
 
-  Future<void> _exportWebsite() async {
-    setState(() => _isExporting = true);
-    try {
-      final revision = _document.revision;
-      final zip = await StaticPackageBuilder().buildWebsitePackage(_document);
-      await widget.repository.recordExported(revision);
-      await SharePlus.instance.share(ShareParams(
-        files: [XFile(zip.path)],
-        subject: 'MenuCard website package',
-        text: 'Upload this ZIP to your static hosting provider. Extract or upload its files at the same public folder to publish your menu.',
-      ));
-      if (!mounted) { return; }
-      _message('Website package created. Remember: the menu is not live until you upload it.');
-    } catch (error) {
-      _message(_cleanError(error));
-    } finally {
-      if (mounted) { setState(() => _isExporting = false); }
-    }
-  }
-
   Future<void> _exportBackup() async {
     try {
       final file = await StaticPackageBuilder().buildPrivateBackup(_document);
@@ -1271,28 +1186,10 @@ class _HomeScreenState extends State<HomeScreen> {
       final bytes = await picked.readAsBytes();
       await StaticPackageBuilder().restorePrivateBackup(bytes, widget.repository);
       _locale = _document.defaultLocale;
-      _urlController.text = _document.publishedUrl ?? '';
       _message('Backup restored. Review the menu before exporting it again.');
     } catch (error) {
       _message(_cleanError(error));
     }
-  }
-
-  Future<void> _confirmPublished() async {
-    try {
-      await widget.repository.confirmPublished(_urlController.text);
-      if (!mounted) { return; }
-      _urlController.text = _document.publishedUrl ?? _urlController.text.trim();
-      _message('Publishing confirmation saved on this device.');
-    } catch (error) {
-      _message(_cleanError(error));
-    }
-  }
-
-  Future<void> _shareMenuLink() async {
-    final url = _document.publishedUrl;
-    if (url == null) { return; }
-    await SharePlus.instance.share(ShareParams(text: 'View our menu: $url'));
   }
 
   String _shopName(MenuDocument document) {
