@@ -181,7 +181,8 @@ void main() {
     await tester.pumpWidget(MenuCardApp(repository: repository));
     await tester.pump(const Duration(milliseconds: 100));
     final homePreview = find.byKey(const ValueKey('home-customer-preview'));
-    final homeScrollable = find.ancestor(of: homePreview, matching: find.byType(Scrollable));
+    // The Home ListView is the first scrollable inside the IndexedStack.
+    final homeScrollable = find.byType(Scrollable).first;
     await tester.scrollUntilVisible(homePreview, 250, scrollable: homeScrollable);
     expect(homePreview, findsOneWidget);
 
