@@ -210,3 +210,20 @@ jobs:
             app/build/app/outputs/flutter-apk/app-release.apk
             app/build/app/outputs/flutter-apk/SHA256SUMS.txt
           make_latest: true
+
+      # A merge commit with this exact release title publishes the QA APK without production signing.
+      - name: Publish MenuCard V1.2.0 physical-testing release
+        if: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'release: MenuCard v1.2.0-test') }}"
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.2.0-test
+          target_commitish: ${{ github.sha }}
+          name: MenuCard V1.2.0 — physical-testing APK
+          body: |
+            MenuCard V1.2.0 offline owner-issued account build for physical Android testing.
+
+            This release-mode APK is signed with the default Android debug key because production signing secrets are not configured. It is for physical QA only, not Play Store distribution or production updates.
+          files: |
+            app/build/app/outputs/flutter-apk/app-release.apk
+            app/build/app/outputs/flutter-apk/SHA256SUMS.txt
+          make_latest: true
