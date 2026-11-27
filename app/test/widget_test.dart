@@ -233,6 +233,10 @@ void main() {
 
     await tester.enterText(urlField, 'https://example.com/menu');
     await tester.tap(find.byKey(const ValueKey('generate-menu-qr')));
+    // Let the repository's real local-file write finish outside fake async.
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+    });
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('generated-menu-qr')), findsOneWidget);
