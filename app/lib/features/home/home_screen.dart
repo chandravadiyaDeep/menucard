@@ -603,7 +603,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
   Future<void> _selectTemplate(MenuTemplate template) async {
-    if (template.id == _document.templateId && _document.templateSelected) return;
+    if (template.id == _document.templateId && _document.templateSelected) { return; }
     final hasShopName = _document.shop.name.values.any((value) => value.trim().isNotEmpty);
     final hasMenuItems = _document.categories.any((category) => category.items.isNotEmpty);
     if (!hasShopName || !hasMenuItems) {
@@ -612,7 +612,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     try {
       await widget.repository.setTemplate(template.id);
-      if (!mounted) return;
+      if (!mounted) { return; }
       _message('${template.name} applied. Your shop details, dishes and prices were kept unchanged.');
     } catch (error) {
       _message(_cleanError(error));
@@ -980,12 +980,12 @@ class _HomeScreenState extends State<HomeScreen> {
         subject: 'MenuCard website package',
         text: 'Upload this ZIP to your static hosting provider. Extract or upload its files at the same public folder to publish your menu.',
       ));
-      if (!mounted) return;
+      if (!mounted) { return; }
       _message('Website package created. Remember: the menu is not live until you upload it.');
     } catch (error) {
       _message(_cleanError(error));
     } finally {
-      if (mounted) setState(() => _isExporting = false);
+      if (mounted) { setState(() => _isExporting = false); }
     }
   }
 
@@ -997,7 +997,7 @@ class _HomeScreenState extends State<HomeScreen> {
         subject: 'MenuCard private menu backup',
         text: 'Keep this ZIP somewhere safe. It contains your local shop/menu JSON and the selected item photos.',
       ));
-      if (!mounted) return;
+      if (!mounted) { return; }
       _message('Private backup file prepared.');
     } catch (error) {
       _message(_cleanError(error));
@@ -1007,7 +1007,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _restoreBackup() async {
     try {
       final picked = await FilePicker.pickFile(type: FileType.custom, allowedExtensions: ['zip']);
-      if (!mounted || picked == null) return;
+      if (!mounted || picked == null) { return; }
       final approved = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
@@ -1019,7 +1019,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       );
-      if (!mounted || approved != true) return;
+      if (!mounted || approved != true) { return; }
       final bytes = await picked.readAsBytes();
       await StaticPackageBuilder().restorePrivateBackup(bytes, widget.repository);
       _locale = _document.defaultLocale;
@@ -1033,7 +1033,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _confirmPublished() async {
     try {
       await widget.repository.confirmPublished(_urlController.text);
-      if (!mounted) return;
+      if (!mounted) { return; }
       _urlController.text = _document.publishedUrl ?? _urlController.text.trim();
       _message('Publishing confirmation saved on this device.');
     } catch (error) {
@@ -1043,14 +1043,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _shareMenuLink() async {
     final url = _document.publishedUrl;
-    if (url == null) return;
+    if (url == null) { return; }
     await SharePlus.instance.share(ShareParams(text: 'View our menu: $url'));
   }
 
   String _shopName(MenuDocument document) {
     for (final locale in <String>{_locale, document.defaultLocale, 'en'}) {
       final value = document.shop.name[locale];
-      if (value != null && value.trim().isNotEmpty) return value;
+      if (value != null && value.trim().isNotEmpty) { return value; }
     }
     return 'Your shop';
   }
@@ -1060,7 +1060,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _cleanError(Object error) => error.toString().replaceFirst('Invalid argument(s): ', '');
 
   void _message(String text) {
-    if (!mounted) return;
+    if (!mounted) { return; }
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text), behavior: SnackBarBehavior.floating));
   }
 }
