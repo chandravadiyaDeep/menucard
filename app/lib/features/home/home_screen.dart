@@ -9,6 +9,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../data/menu_document.dart';
 import '../../data/menu_repository.dart';
+import '../../design/menu_template_catalog.dart';
 import '../../services/static_package_builder.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -25,6 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _locale = 'en';
   late final TextEditingController _urlController;
   bool _isExporting = false;
+  String _templateLayoutFilter = 'All';
 
   MenuDocument get _document => widget.repository.document;
 
@@ -80,6 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   _overviewPage(document),
                   _menuPage(document),
+                  _templatePage(document),
                   _publishPage(document),
                 ],
               ),
@@ -90,6 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
               destinations: const [
                 NavigationDestination(icon: Icon(Icons.grid_view_rounded), label: 'Home'),
                 NavigationDestination(icon: Icon(Icons.menu_book_rounded), label: 'My menu'),
+                NavigationDestination(icon: Icon(Icons.palette_outlined), label: 'Designs'),
                 NavigationDestination(icon: Icon(Icons.qr_code_2_rounded), label: 'Publish'),
               ],
             ),
@@ -188,12 +192,9 @@ class _HomeScreenState extends State<HomeScreen> {
               }
             })),
             const SizedBox(width: 10),
-            Expanded(child: _quickAction(Icons.folder_open_outlined, 'Add category', () {
-              setState(() => _tab = 1);
-              _showCategoryDialog();
-            })),
+            Expanded(child: _quickAction(Icons.palette_outlined, 'Choose design', () => setState(() => _tab = 2))),
             const SizedBox(width: 10),
-            Expanded(child: _quickAction(Icons.qr_code_2, 'QR menu', () => setState(() => _tab = 2))),
+            Expanded(child: _quickAction(Icons.qr_code_2, 'QR menu', () => setState(() => _tab = 3))),
           ],
         ),
         const SizedBox(height: 24),
@@ -356,6 +357,173 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  // Browse a generated library of ready-made layouts and color systems.
+  // Shop text and menu items are bound into the selected design automatically.
+  Widget _templatePage(MenuDocument document) {
+    final selected = MenuTemplateCatalog.byId(document.templateId);
+    final templates = _templateLayoutFilter == 'All'
+        ? MenuTemplateCatalog.all
+        : MenuTemplateCatalog.all.where((entry) => entry.layoutId == _templateLayoutFilter).toList();
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(18, 10, 18, 28),
+      children: [
+        const Text('READY-MADE MENU LIBRARY', style: TextStyle(fontSize: 10, letterSpacing: 1.35, fontWeight: FontWeight.w900, color: Color(0xFF6B786F))),
+        const SizedBox(height: 7),
+        const Text('Your menu. A design you love.', style: TextStyle(fontSize: 27, fontWeight: FontWeight.w900, letterSpacing: -.8)),
+        const SizedBox(height: 7),
+        Text('${MenuTemplateCatalog.all.length} ready-made designs. Your shop name, dishes and prices flow into every template automatically.',
+            style: const TextStyle(color: Color(0xFF78827B), height: 1.5, fontSize: 12)),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(color: const Color(0xFFE8EEE7), borderRadius: BorderRadius.circular(18)),
+          child: Row(children: [
+            const Icon(Icons.check_circle_rounded, color: Color(0xFF285C47)),
+            const SizedBox(width: 10),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Text('Currently selected', style: TextStyle(fontSize: 10, color: Color(0xFF5E7064), fontWeight: FontWeight.w700)),
+              Text(selected.name, style: const TextStyle(fontSize: 14, color: Color(0xFF173F33), fontWeight: FontWeight.w900)),
+            ])),
+            TextButton(onPressed: () => setState(() => _templateLayoutFilter = 'All'), child: const Text('All')),
+          ]),
+        ),
+        const SizedBox(height: 16),
+        const Text('Browse by layout', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900)),
+        const SizedBox(height: 9),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(children: [
+            _templateFilterChip('All', 'All'),
+            for (final layout in MenuTemplateCatalog.layouts)
+              _templateFilterChip(layout.name, layout.id),
+          ]),
+        ),
+        const SizedBox(height: 15),
+        Text('${templates.length} designs', style: const TextStyle(fontSize: 11, color: Color(0xFF78827B), fontWeight: FontWeight.w700)),
+        const SizedBox(height: 10),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: templates.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 11,
+            mainAxisSpacing: 12,
+            childAspectRatio: .76,
+          ),
+          itemBuilder: (context, index) => _templateCard(templates[index], document),
+        ),
+      ],
+    );
+  }
+
+  Widget _templateFilterChip(String label, String value) => Padding(
+        padding: const EdgeInsets.only(right: 7),
+        child: ChoiceChip(
+          label: Text(label),
+          selected: _templateLayoutFilter == value,
+          onSelected: (_) => setState(() => _templateLayoutFilter = value),
+          visualDensity: VisualDensity.compact,
+        ),
+      );
+
+  Widget _templateCard(MenuTemplate template, MenuDocument document) {
+    final isSelected = template.id == document.templateId;
+    final primary = Color(template.primaryColor);
+    final background = Color(template.backgroundColor);
+    final accent = Color(template.accentColor);
+    final textColor = Color(template.textColor);
+    final shopName = _shopName(document);
+    final sampleItem = document.categories
+        .expand((category) => category.items)
+        .firstOrNull;
+    final sampleName = sampleItem?.nameFor(_locale, document.defaultLocale) ?? 'Your best-selling dish';
+    final samplePrice = sampleItem == null ? '₹120' : _price(sampleItem.priceMinor);
+
+    return InkWell(
+      onTap: () => _selectTemplate(template),
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        padding: const EdgeInsets.all(9),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFEFA),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: isSelected ? primary : const Color(0xFFE7E5DC), width: isSelected ? 2 : 1),
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: background,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: accent.withValues(alpha: .75)),
+              ),
+              child: Column(
+                crossAxisAlignment: template.layoutId == 'luxury' || template.layoutId == 'editorial'
+                    ? CrossAxisAlignment.center
+                    : CrossAxisAlignment.start,
+                children: [
+                  if (template.layoutId == 'streetfood')
+                    Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3), decoration: BoxDecoration(color: accent, borderRadius: BorderRadius.circular(4)), child: Text('SPECIAL MENU', style: TextStyle(color: primary, fontSize: 6, fontWeight: FontWeight.w900, letterSpacing: .6))),
+                  const SizedBox(height: 5),
+                  Text(shopName, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: template.layoutId == 'luxury' || template.layoutId == 'editorial' ? TextAlign.center : TextAlign.start,
+                      style: TextStyle(color: primary, fontWeight: FontWeight.w900, fontSize: template.layoutId == 'luxury' ? 13 : 11, letterSpacing: template.layoutId == 'editorial' ? -.4 : .1)),
+                  Container(height: template.layoutId == 'compact' ? 1 : 2, width: template.layoutId == 'editorial' ? 40 : double.infinity, margin: const EdgeInsets.symmetric(vertical: 7), color: accent),
+                  if (template.layoutId == 'photo')
+                    Row(children: [
+                      Expanded(child: _templatePhotoPlaceholder(accent)),
+                      const SizedBox(width: 5),
+                      Expanded(child: _templatePhotoPlaceholder(accent)),
+                    ])
+                  else if (template.layoutId == 'chalkboard')
+                    Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(border: Border.all(color: accent), borderRadius: BorderRadius.circular(5)), child: Text(sampleName, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: textColor, fontSize: 8, fontWeight: FontWeight.w800)))
+                  else
+                    Text(sampleName, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: textColor, fontSize: 9, fontWeight: FontWeight.w800)),
+                  const Spacer(),
+                  Row(children: [
+                    Expanded(child: Container(height: 3, decoration: BoxDecoration(color: accent, borderRadius: BorderRadius.circular(5)))),
+                    const SizedBox(width: 5),
+                    Text(samplePrice, style: TextStyle(color: primary, fontSize: 8, fontWeight: FontWeight.w900)),
+                  ]),
+                  if (template.layoutId == 'bistro' || template.layoutId == 'rustic')
+                    Padding(padding: const EdgeInsets.only(top: 5), child: Text('FRESH · LOCAL · MADE WITH CARE', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: primary, fontSize: 5, fontWeight: FontWeight.w800, letterSpacing: .5))),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(template.layoutName, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+          Text(template.themeName, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 9, color: Color(0xFF78827B))),
+          const SizedBox(height: 5),
+          Row(children: [
+            Expanded(child: Text(isSelected ? 'Selected' : 'Use this design', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: isSelected ? primary : const Color(0xFF78827B)))),
+            if (isSelected) Icon(Icons.check_circle, color: primary, size: 16) else Icon(Icons.arrow_forward_rounded, color: primary, size: 15),
+          ]),
+        ]),
+      ),
+    );
+  }
+
+  Widget _templatePhotoPlaceholder(Color accent) => Container(
+        height: 35,
+        decoration: BoxDecoration(color: accent.withValues(alpha: .55), borderRadius: BorderRadius.circular(6)),
+        child: Icon(Icons.restaurant_rounded, color: accent.computeLuminance() > .5 ? const Color(0xFF4B514C) : Colors.white, size: 16),
+      );
+
+  Future<void> _selectTemplate(MenuTemplate template) async {
+    if (template.id == _document.templateId) return;
+    try {
+      await widget.repository.setTemplate(template.id);
+      if (!mounted) return;
+      _message('${template.name} applied. Your shop details, dishes and prices were kept unchanged.');
+    } catch (error) {
+      _message(_cleanError(error));
+    }
   }
 
   Widget _publishPage(MenuDocument document) {
