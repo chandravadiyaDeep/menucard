@@ -79,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: _showShopDialog,
                   icon: const Icon(Icons.storefront_outlined),
                 ),
-                if (accountRepository != null)
+                if (widget.accountRepository != null)
                   IconButton(
                     tooltip: 'Export account recovery backup',
                     onPressed: _exportAccountBackup,
