@@ -191,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Row(
           children: [
             const Expanded(child: Text('Quick actions', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900))),
-            Text('V1.1.1', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 10, fontWeight: FontWeight.w900)),
+            Text('V1.1.2', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 10, fontWeight: FontWeight.w900)),
           ],
         ),
         const SizedBox(height: 12),
@@ -210,6 +210,18 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(width: 10),
             Expanded(child: _quickAction(Icons.qr_code_2, 'QR menu', () => setState(() => _tab = 3))),
           ],
+        ),
+        const SizedBox(height: 10),
+        OutlinedButton.icon(
+          onPressed: _openCustomerPreview,
+          icon: const Icon(Icons.visibility_outlined),
+          label: const Text('Preview customer menu'),
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size.fromHeight(48),
+            foregroundColor: const Color(0xFF285C47),
+            side: const BorderSide(color: Color(0xFFD5DED5)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          ),
         ),
         const SizedBox(height: 24),
         Row(
@@ -431,7 +443,13 @@ class _HomeScreenState extends State<HomeScreen> {
         const Text('Build your menu.', style: TextStyle(fontSize: 27, fontWeight: FontWeight.w900, letterSpacing: -.8)),
         const SizedBox(height: 7),
         const Text('Add products, set prices and keep availability up to date. Your edits are saved locally.', style: TextStyle(color: Color(0xFF78827B), height: 1.45, fontSize: 12)),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: _openCustomerPreview,
+          icon: const Icon(Icons.phone_iphone_rounded),
+          label: const Text('Preview customer menu'),
+        ),
+        const SizedBox(height: 10),
         Row(children: [
           const Text('Editing language', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12)),
           const Spacer(),
@@ -491,7 +509,21 @@ class _HomeScreenState extends State<HomeScreen> {
             if (_filteredItems(category, document).isNotEmpty || (_menuSearch.isEmpty && _availabilityFilter == 'all'))
               _categoryEditorCard(category, document, visibleItems: _filteredItems(category, document)),
           if (!categories.any((entry) => (_categoryFilter == 'all' || entry.id == _categoryFilter) && _filteredItems(entry, document).isNotEmpty))
-            _emptyCard(Icons.search_off_rounded, 'No matching menu items', 'Try another search or change the filters.'),
+            Column(children: [
+              _emptyCard(Icons.search_off_rounded, 'No matching menu items', 'Try another search or change the filters.'),
+              TextButton.icon(
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() {
+                    _menuSearch = '';
+                    _categoryFilter = 'all';
+                    _availabilityFilter = 'all';
+                  });
+                },
+                icon: const Icon(Icons.filter_alt_off_rounded, size: 17),
+                label: const Text('Clear all filters'),
+              ),
+            ]),
         ],
       ],
     );
