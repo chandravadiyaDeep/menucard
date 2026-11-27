@@ -185,7 +185,7 @@ class _QrMenuScreenState extends State<QrMenuScreen> {
             ),
             const SizedBox(height: 7),
             const Text(
-              'Add your public menu link. We’ll turn it into a QR code you can save or share.',
+              'Generate one QR code for your menu, then save it or share it with customers.',
               style: TextStyle(color: Color(0xFF78827B), height: 1.5, fontSize: 12),
             ),
             const SizedBox(height: 18),
@@ -199,7 +199,7 @@ class _QrMenuScreenState extends State<QrMenuScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('PUBLIC MENU LINK', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: .9)),
+                  const Text('YOUR PUBLIC MENU LINK', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: .9)),
                   const SizedBox(height: 9),
                   TextField(
                     key: const ValueKey('qr-menu-url'),
@@ -217,7 +217,7 @@ class _QrMenuScreenState extends State<QrMenuScreen> {
                   ),
                   const SizedBox(height: 7),
                   const Text(
-                    'Your menu link must already be public and open on customers’ phones. MenuCard does not upload it.',
+                    'Paste the public link customers use to open your menu. The link must already be live.',
                     style: TextStyle(fontSize: 10, color: Color(0xFF78827B), height: 1.4),
                   ),
                   if (_error != null) ...[
@@ -283,7 +283,7 @@ class _QrMenuScreenState extends State<QrMenuScreen> {
                             key: const ValueKey('share-qr-png'),
                             onPressed: _isExporting ? null : () => _exportQr(asPdf: false),
                             icon: const Icon(Icons.image_outlined, size: 17),
-                            label: const Text('Export / share PNG'),
+                            label: const Text('Image'),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -292,7 +292,7 @@ class _QrMenuScreenState extends State<QrMenuScreen> {
                             key: const ValueKey('share-qr-pdf'),
                             onPressed: _isExporting ? null : () => _exportQr(asPdf: true),
                             icon: const Icon(Icons.picture_as_pdf_outlined, size: 17),
-                            label: const Text('Export / share PDF'),
+                            label: const Text('PDF'),
                           ),
                         ),
                       ],
@@ -308,7 +308,7 @@ class _QrMenuScreenState extends State<QrMenuScreen> {
               ),
               const SizedBox(height: 9),
               const Text(
-                'Choose Image or PDF to open your phone’s share sheet. You can send it or save it to your device.',
+                'Save or share your menu QR as an image or PDF.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 10, color: Color(0xFF78827B), height: 1.4),
               ),
