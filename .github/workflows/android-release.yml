@@ -144,7 +144,7 @@ jobs:
           files: |
             app/build/app/outputs/flutter-apk/app-release.apk
             app/build/app/outputs/flutter-apk/SHA256SUMS.txt
-      - name: Publish V1.1.2 Android test APK
+      - name: Publish V1.1.3 Android test APK
         if: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'release: MenuCard v1.1.3') }}"
         uses: softprops/action-gh-release@v2
         with:
