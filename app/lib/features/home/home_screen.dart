@@ -111,6 +111,10 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 8),
         Text('Your menu,\none simple place.', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, height: 1.05, letterSpacing: -1.1)),
         _setupProgressCard(document, itemCount),
+        if (document.shop.name.values.every((value) => value.trim().isEmpty)) ...[
+          const SizedBox(height: 14),
+          _firstRunCard(),
+        ],
         const SizedBox(height: 18),
         Container(
           padding: const EdgeInsets.all(20),
@@ -178,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Row(
           children: [
             const Expanded(child: Text('Quick actions', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900))),
-            Text('V1.0', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 10, fontWeight: FontWeight.w900)),
+            Text('V1.1', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 10, fontWeight: FontWeight.w900)),
           ],
         ),
         const SizedBox(height: 12),
@@ -213,6 +217,106 @@ class _HomeScreenState extends State<HomeScreen> {
         _publishStatus(document),
       ],
     );
+  }
+
+  // A short setup interview chooses the owner's language and shop starter categories.
+  Widget _firstRunCard() => Container(
+        padding: const EdgeInsets.all(17),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE8EEE7),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(children: [
+          const Icon(Icons.auto_awesome_rounded, color: Color(0xFF285C47), size: 25),
+          const SizedBox(width: 12),
+          const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('New to MenuCard?', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
+            SizedBox(height: 3),
+            Text('Answer 3 quick questions and get a menu starter made for your shop.', style: TextStyle(fontSize: 11, height: 1.4, color: Color(0xFF617166))),
+          ])),
+          TextButton(onPressed: _startGuidedSetup, child: const Text('Start')),
+        ]),
+      );
+
+  Future<void> _startGuidedSetup() async {
+    final shopName = TextEditingController();
+    final phone = TextEditingController();
+    var language = _document.defaultLocale;
+    var shopType = 'cafe';
+    final types = <String, Map<String, List<String>>>{
+      'cafe': {'en': ['Coffee & Tea', 'Snacks', 'Desserts'], 'gu': ['ચા અને કોફી', 'નાસ્તો', 'મીઠાઈ'], 'hi': ['चाय और कॉफी', 'नाश्ता', 'मिठाई']},
+      'restaurant': {'en': ['Starters', 'Main Course', 'Breads', 'Drinks'], 'gu': ['સ્ટાર્ટર', 'મુખ્ય ભોજન', 'રોટલી', 'પીણાં'], 'hi': ['स्टार्टर', 'मुख्य भोजन', 'रोटी', 'पेय']},
+      'bakery': {'en': ['Cakes', 'Pastries', 'Breads', 'Cookies'], 'gu': ['કેક', 'પેસ્ટ્રી', 'બ્રેડ', 'કૂકીઝ'], 'hi': ['केक', 'पेस्ट्री', 'ब्रेड', 'कुकीज़']},
+      'tea': {'en': ['Tea & Coffee', 'Quick Bites', 'Cold Drinks'], 'gu': ['ચા અને કોફી', 'ઝટપટ નાસ્તો', 'ઠંડાં પીણાં'], 'hi': ['चाय और कॉफी', 'झटपट नाश्ता', 'ठंडे पेय']},
+      'other': {'en': ['Popular', 'Food', 'Drinks'], 'gu': ['લોકપ્રિય', 'ખાવાનું', 'પીણાં'], 'hi': ['लोकप्रिय', 'खाना', 'पेय']},
+    };
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(builder: (context, setDialogState) => AlertDialog(
+        title: const Text('Let’s set up your shop'),
+        content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('1. What should your customers call your shop?', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 8),
+          TextField(controller: shopName, autofocus: true, textCapitalization: TextCapitalization.words, decoration: const InputDecoration(hintText: 'e.g. Nukkad Cafe')),
+          const SizedBox(height: 16),
+          const Text('2. Which language should your menu use?', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            initialValue: language,
+            items: const [
+              DropdownMenuItem(value: 'en', child: Text('English')),
+              DropdownMenuItem(value: 'gu', child: Text('ગુજરાતી')),
+              DropdownMenuItem(value: 'hi', child: Text('हिन्दी')),
+            ],
+            onChanged: (value) => setDialogState(() => language = value ?? 'en'),
+          ),
+          const SizedBox(height: 16),
+          const Text('3. What kind of shop do you run?', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            initialValue: shopType,
+            items: const [
+              DropdownMenuItem(value: 'cafe', child: Text('Cafe / Snacks')),
+              DropdownMenuItem(value: 'restaurant', child: Text('Restaurant')),
+              DropdownMenuItem(value: 'bakery', child: Text('Bakery')),
+              DropdownMenuItem(value: 'tea', child: Text('Tea stall')),
+              DropdownMenuItem(value: 'other', child: Text('Other shop')),
+            ],
+            onChanged: (value) => setDialogState(() => shopType = value ?? 'other'),
+          ),
+          const SizedBox(height: 8),
+          TextField(controller: phone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'Phone (optional)')),
+          const SizedBox(height: 8),
+          const Text('We’ll create starter categories. You can rename or delete them anytime.', style: TextStyle(fontSize: 10, color: Color(0xFF78827B))),
+        ])),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Not now')),
+          FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('Create my menu')),
+        ],
+      )),
+    );
+    if (result == true) {
+      try {
+        await widget.repository.saveShop(
+          name: shopName.text,
+          description: '',
+          translationLocale: language,
+          defaultLocale: language,
+          phone: phone.text,
+        );
+        for (final category in types[shopType]![language]!) {
+          await widget.repository.saveCategory(title: category, locale: language);
+        }
+        if (!mounted) return;
+        setState(() { _locale = language; _tab = 1; });
+        _message('Your shop is ready. Add your first dishes and prices!');
+      } catch (error) {
+        _message(_cleanError(error));
+      }
+    }
+    shopName.dispose();
+    phone.dispose();
   }
 
   // Guide first-time owners through profile, menu entry and design selection.
