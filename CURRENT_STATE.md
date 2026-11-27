@@ -113,7 +113,10 @@
 - [x] PR #3 merged to main: https://github.com/chandravadiyaDeep/menucard/pull/3
 - [x] Formatting, Flutter analyzer, Flutter tests, owner-code generator checks, JavaScript syntax and customer renderer tests passed in Android workflow run #46059745026.
 - [x] GitHub Pages website deployment succeeded in run #46059968325.
-- [ ] Release-mode APK build, checksum and V1.2.0 physical-testing GitHub Release are running in workflow #46059745026.
-- [ ] Physical Android testing is the only planned manual QA step after APK publication.
+- [x] Release-mode APK build and checksum passed in workflow #46059745026.
+- [x] Published V1.2.0 physical-testing release: https://github.com/chandravadiyaDeep/menucard/releases/tag/v1.2.0-test
+- [x] Latest release API now resolves to `v1.2.0-test`; website download section uses this latest release dynamically.
+- [ ] Physical Android testing is the only remaining manual QA step.
 - Cross-device single-use is controlled by the issuer's private CSV ledger; offline app instances cannot coordinate. Phone numbers are identifiers, not verified identity.
 - The physical-testing APK uses the Android debug key. It is not a production-signed or Play Store-ready release.
+- APK SHA-256: `504fdae280df8f1e853a4c993145f845808934861aa1a72c1b6e836219d99352`.
