@@ -13,19 +13,37 @@ class OfflineAccountRepository {
   final File _file;
   Map<String, dynamic> _state;
 
-  static Future<OfflineAccountRepository> open() async {
+  static Future<OfflineAccountRepository> open({bool grandfatherExistingInstall = false}) async {
     final directory = await getApplicationSupportDirectory();
-    return openAt(File(p.join(directory.path, 'accounts.json')));
+    return openAt(
+      File(p.join(directory.path, 'accounts.json')),
+      grandfatherExistingInstall: grandfatherExistingInstall,
+    );
   }
 
   /// File-injected constructor keeps persistence deterministic in automated tests.
-  static Future<OfflineAccountRepository> openAt(File file) async {
+  static Future<OfflineAccountRepository> openAt(
+    File file, {
+    bool grandfatherExistingInstall = false,
+  }) async {
     if (!await file.exists()) {
       final initial = <String, dynamic>{
         'schema_version': 1,
         'issued_codes': <Map<String, dynamic>>[],
         'accounts': <Map<String, dynamic>>[],
       };
+      if (grandfatherExistingInstall) {
+        // Preserve access for owners who already had local MenuCard data before accounts existed.
+        initial['accounts'] = [
+          {
+            'id': 'legacy-${_randomHex(8)}',
+            'mobile': '',
+            'shop_name': 'Existing MenuCard owner',
+            'created_at': DateTime.now().toUtc().toIso8601String(),
+            'activation_type': 'legacy_existing_install',
+          },
+        ];
+      }
       await file.create(recursive: true);
       await file.writeAsString(const JsonEncoder.withIndent('  ').convert(initial), flush: true);
       return OfflineAccountRepository._(file, initial);
@@ -64,7 +82,10 @@ class OfflineAccountRepository {
 
   Future<void> register({required String mobile, required String code, required String shopName}) async {
     final phone = _normalizePhone(mobile);
-    if (phone.length < 10) throw ArgumentError('Enter a valid mobile number.');
+    final digits = phone.replaceAll('+', '');
+    if (digits.length < 10 || digits.length > 15 || phone.startsWith('+') && phone.indexOf('+', 1) != -1) {
+      throw ArgumentError('Enter a valid mobile number.');
+    }
     if (shopName.trim().isEmpty) throw ArgumentError('Enter your shop name.');
     final accounts = (_state['accounts'] as List).cast<Map<String, dynamic>>();
     if (accounts.any((a) => a['mobile'] == phone)) {
@@ -146,7 +167,11 @@ class OfflineAccountRepository {
     await temp.rename(_file.path);
   }
 
-  static String _normalizePhone(String value) => value.replaceAll(RegExp(r'[^0-9+]'), '');
+  static String _normalizePhone(String value) {
+    final trimmed = value.trim();
+    final digits = trimmed.replaceAll(RegExp(r'[^0-9]'), '');
+    return trimmed.startsWith('+') ? '+$digits' : digits;
+  }
   static String _normalizeCode(String value) => value.toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
   static String _hash(String code, String salt) => sha256.convert(utf8.encode('$salt:$code')).toString();
   static String _randomHex(int bytes) {
