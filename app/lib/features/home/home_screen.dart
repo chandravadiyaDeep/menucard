@@ -1162,7 +1162,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _exportAccountBackup() async {
     final accounts = widget.accountRepository;
-    if (accounts == null) return;
+    if (accounts == null) {
+      return;
+    }
     try {
       // Keep account backup separate from the public menu ZIP and customer export.
       final file = File('${Directory.systemTemp.path}/menucard-account-recovery.json');
