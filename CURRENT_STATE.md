@@ -61,7 +61,8 @@
 - [x] Publish copy is simplified: one clear QR workflow, with Image and PDF actions.
 - [x] QR destination is excluded from customer-facing public JSON.
 - [x] Private backup/restore remain accessible from the app-bar backup menu, outside Publish.
-- [ ] V1.1.3 formatting, static analysis, widget/repository tests and APK build are pending CI.
+- [x] Dart formatting, Flutter static analysis, complete Flutter tests, JavaScript syntax and customer renderer tests passed in Android workflow run #46038192565.
+- [ ] Release-mode APK build, checksum and GitHub Release publication are still running in workflow #46038192565.
 - [ ] Physical Android QA for QR scanning, PNG/PDF export and share sheet is pending.
 ## Template-first implementation verification
 - [x] Template gallery, template persistence, 120-design catalog and static customer renderer passed Flutter formatting, static analysis and automated tests in Android workflow run #35.
