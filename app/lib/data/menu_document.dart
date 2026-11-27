@@ -11,6 +11,7 @@ class MenuDocument {
     this.templateId = 'classic-forest',
     this.templateSelected = false,
     this.publishedUrl,
+    this.qrMenuUrl,
     this.publishedRevision = 0,
     this.publishedAt,
     this.exportedRevision = 0,
@@ -32,6 +33,8 @@ class MenuDocument {
 
   // Local-only publishing state. This is deliberately excluded from public JSON.
   String? publishedUrl;
+  // The last menu URL used to generate a QR code; local-only and backward compatible.
+  String? qrMenuUrl;
   int publishedRevision;
   DateTime? publishedAt;
   int exportedRevision;
@@ -81,6 +84,7 @@ class MenuDocument {
       templateId: json['template_id']?.toString() ?? 'classic-forest',
       templateSelected: json['template_selected'] == true,
       publishedUrl: publish['url']?.toString(),
+      qrMenuUrl: publish['qr_menu_url']?.toString(),
       publishedRevision: _nonNegativeInt(publish['revision']),
       publishedAt: DateTime.tryParse(publish['at']?.toString() ?? ''),
       exportedRevision: _nonNegativeInt(publish['exported_revision']),
@@ -98,6 +102,7 @@ class MenuDocument {
         'template_selected': templateSelected,
         'local_publish': {
           'url': publishedUrl,
+          'qr_menu_url': qrMenuUrl,
           'revision': publishedRevision,
           'at': publishedAt?.toIso8601String(),
           'exported_revision': exportedRevision,
