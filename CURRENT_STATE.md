@@ -57,6 +57,7 @@
 - [x] Existing published URL is used as the initial QR destination for backward compatibility.
 - [x] QR preview appears in the app after generation.
 - [x] High-resolution PNG export and A4 PDF export are generated on-device and opened in the Android share sheet for sharing/saving.
+- [x] Publish screen wording and buttons simplified to a single QR workflow with Image and PDF actions.
 - [x] Publish copy is simplified: one clear QR workflow, with Image and PDF actions.
 - [x] QR destination is excluded from customer-facing public JSON.
 - [x] Private backup/restore remain accessible from the app-bar backup menu, outside Publish.
