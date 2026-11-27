@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:menucard/data/menu_repository.dart';
+import 'package:menucard/design/menu_template_catalog.dart';
 
 void main() {
   late Directory sandbox;
@@ -224,6 +225,30 @@ void main() {
     expect(latestSnacks.items.single.priceMinor, 3000);
     expect(latestSnacks.items.single.available, isFalse);
     expect(latestSnacks.items.single.nameFor('en', 'en'), 'Lemon Soda Large');
+  });
+
+
+  test('template library provides at least 100 unique ready-made designs', () {
+    expect(MenuTemplateCatalog.all.length, greaterThanOrEqualTo(100));
+    expect(MenuTemplateCatalog.all.map((entry) => entry.id).toSet(), hasLength(MenuTemplateCatalog.all.length));
+    expect(MenuTemplateCatalog.byId(MenuTemplateCatalog.defaultId).layoutId, 'classic');
+  });
+
+  test('selected ready-made design persists and is included in customer JSON', () async {
+    await repository.saveShop(
+      name: 'Template Test Cafe',
+      description: '',
+      translationLocale: 'en',
+      defaultLocale: 'en',
+    );
+    await repository.setTemplate('editorial-terracotta');
+
+    final publicJson = repository.document.toPublicJson();
+    expect(publicJson['template_id'], 'editorial-terracotta');
+
+    final reloaded = await MenuRepository.openAt(file);
+    expect(reloaded.document.templateId, 'editorial-terracotta');
+    reloaded.dispose();
   });
 
 }
