@@ -48,34 +48,35 @@
 - [x] Widget tests cover preview entry points, search, filter reset and availability filtering; Node tests exercise the actual customer renderer.
 - [x] GitHub Actions workflow checks formatting, static analysis, Flutter tests, JavaScript syntax, renderer tests and release-mode APK build.
 - [x] Website download section resolves the latest GitHub Release APK dynamically.
-- [ ] V1.1.2 quality run, APK upload and public website download must complete before claiming the new APK is live.
+- [x] V1.1.2 quality run, release-mode APK build, checksum and GitHub Release upload completed successfully.
+- [x] Latest APK is published as the `v1.1.2` GitHub Release and the landing page resolves the latest APK dynamically.
 
 ## Template-first implementation verification
 - [x] Template gallery, template persistence, 120-design catalog and static customer renderer passed Flutter formatting, static analysis and automated tests in Android workflow run #35.
 - [ ] Physical device visual QA for the 120-template gallery and customer menu is pending.
 
 ## CI verification
-- [x] Flutter formatting step completed.
-- [x] Flutter static analysis passed.
-- [x] Complete Flutter test suite passed on the latest build attempt.
-- [x] Android platform project generation and dependency installation passed.
-- [ ] Latest release-mode APK build is still running in GitHub Actions.
-- Latest run: https://github.com/chandravadiyaDeep/menucard/actions/runs/45939079658
-- CI now uses Java 21 because the previous Java 17 run crashed inside Android Lint.
-- No APK artifact is claimed until the build and artifact-upload steps complete.
+- [x] Dart formatting passed.
+- [x] Flutter static analysis passed with no issues.
+- [x] Complete Flutter test suite passed.
+- [x] Customer-menu JavaScript syntax check passed.
+- [x] Customer renderer and search tests passed.
+- [x] Android release-mode APK built and checksum recorded.
+- [x] APK artifact uploaded and V1.1.2 GitHub Release published.
+- Latest Android run: https://github.com/chandravadiyaDeep/menucard/actions/runs/45946942376
+- Release: https://github.com/chandravadiyaDeep/menucard/releases/tag/v1.1.2
+- Website: https://chandravadiyadeep.github.io/menucard/
 
 ## Production release status
-- No permanent production signing keystore has been configured in GitHub Actions secrets.
-- Main-branch release-mode artifacts are installable test candidates, not production/Play Store signed releases.
-- No physical Android device QA or public static-host upload verification has been completed.
-- No production APK is currently published. The V1.1.1 branch adds an automated GitHub Release workflow, but no APK should be advertised until the workflow succeeds and publishes its asset.
-- See app/RELEASE.md for the four required signing secrets and secure release process.
+- The V1.1.2 APK is a release-mode test build signed with the default Android debug key because production signing secrets are not configured.
+- It is suitable for device testing, not Play Store distribution or a production-signed update channel.
+- Physical Android device QA remains pending.
+- The GitHub Pages landing page resolves the newest APK from the public GitHub Releases API; the per-shop customer website package remains a manual owner export/upload.
 
 ## Remaining quality gates
-1. Verify V1.1.1 PR CI, release-mode APK build and GitHub Release asset.
-2. Install and test on physical Android devices: fresh install, persistence after force-close, menu CRUD, template gallery, customer preview/export, image import/export, backup/restore, share sheet and QR.
-3. Upload a generated customer package to a suitable static host, verify replacement/cache behavior and scan the QR.
-4. Configure persistent signing secrets before creating a production release tag.
+1. Install V1.1.2 on physical Android devices and verify fresh install, persistence after force-close, menu CRUD, preview, template switching, image import, backup/restore, QR and sharing.
+2. Configure production signing secrets before preparing a Play Store/production-signed release.
+3. Test a customer website package on a real static host and scan the published QR.
 
 ## Guardrails
 - Never call a debug-signed candidate a production APK.
