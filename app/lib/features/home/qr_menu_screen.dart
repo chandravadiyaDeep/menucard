@@ -180,7 +180,7 @@ class _QrMenuScreenState extends State<QrMenuScreen> {
             ),
             const SizedBox(height: 7),
             const Text(
-              'Create your menu QR',
+              'Your menu QR code',
               style: TextStyle(fontSize: 27, fontWeight: FontWeight.w900, letterSpacing: -.8),
             ),
             const SizedBox(height: 7),
