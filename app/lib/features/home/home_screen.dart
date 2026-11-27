@@ -110,6 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
         const Text('YOUR BUSINESS, BEAUTIFULLY PRESENTED', style: TextStyle(fontSize: 10, letterSpacing: 1.35, fontWeight: FontWeight.w900, color: Color(0xFF6B786F))),
         const SizedBox(height: 8),
         Text('Your menu,\none simple place.', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, height: 1.05, letterSpacing: -1.1)),
+        _setupProgressCard(document, itemCount),
         const SizedBox(height: 18),
         Container(
           padding: const EdgeInsets.all(20),
@@ -213,6 +214,93 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
     );
   }
+
+  // Guide first-time owners through profile, menu entry and design selection.
+  Widget _setupProgressCard(MenuDocument document, int itemCount) {
+    final profileReady = document.shop.name.values.any((value) => value.trim().isNotEmpty);
+    final menuReady = itemCount > 0;
+    final designReady = document.templateSelected;
+    return Container(
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFEFA),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE7E5DC)),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Text('Set up your digital menu', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900)),
+        const SizedBox(height: 4),
+        const Text('Add your details and dishes. We will place them into the design you choose.', style: TextStyle(fontSize: 11, color: Color(0xFF78827B), height: 1.4)),
+        const SizedBox(height: 12),
+        _setupStepRow(
+          number: '01',
+          title: 'Shop profile',
+          detail: profileReady ? 'Shop details saved' : 'Add your shop name and details',
+          complete: profileReady,
+          actionLabel: profileReady ? 'Edit' : 'Add',
+          onTap: _showShopDialog,
+        ),
+        const Divider(height: 17),
+        _setupStepRow(
+          number: '02',
+          title: 'Your dishes and prices',
+          detail: menuReady ? '$itemCount menu items added' : 'Add categories, dishes and prices',
+          complete: menuReady,
+          actionLabel: menuReady ? 'Manage' : 'Add menu',
+          onTap: () {
+            if (!profileReady) {
+              _message('Add your shop profile first.');
+              return;
+            }
+            setState(() => _tab = 1);
+          },
+        ),
+        const Divider(height: 17),
+        _setupStepRow(
+          number: '03',
+          title: 'Choose a ready-made design',
+          detail: designReady ? 'Your design is selected' : 'Choose from 120 menu designs',
+          complete: designReady,
+          actionLabel: designReady ? 'Change' : 'Choose',
+          onTap: () {
+            if (!profileReady || !menuReady) {
+              _message('Add your shop profile and at least one dish before choosing a design.');
+              return;
+            }
+            setState(() => _tab = 2);
+          },
+        ),
+      ]),
+    );
+  }
+
+  Widget _setupStepRow({
+    required String number,
+    required String title,
+    required String detail,
+    required bool complete,
+    required String actionLabel,
+    required VoidCallback onTap,
+  }) => Row(children: [
+        Container(
+          width: 29,
+          height: 29,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: complete ? const Color(0xFFE1EFE5) : const Color(0xFFF1F0EA),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: complete
+              ? const Icon(Icons.check_rounded, size: 17, color: Color(0xFF28724A))
+              : Text(number, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF6B786F))),
+        ),
+        const SizedBox(width: 10),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
+          Text(detail, style: const TextStyle(fontSize: 10, color: Color(0xFF78827B))),
+        ])),
+        TextButton(onPressed: onTap, child: Text(actionLabel)),
+      ]);
 
   Widget _statCard(String label, String value, IconData icon) => Container(
         padding: const EdgeInsets.all(16),
@@ -515,7 +603,13 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
   Future<void> _selectTemplate(MenuTemplate template) async {
-    if (template.id == _document.templateId) return;
+    if (template.id == _document.templateId && _document.templateSelected) return;
+    final hasShopName = _document.shop.name.values.any((value) => value.trim().isNotEmpty);
+    final hasMenuItems = _document.categories.any((category) => category.items.isNotEmpty);
+    if (!hasShopName || !hasMenuItems) {
+      _message('Complete your shop profile and add at least one dish before applying a design.');
+      return;
+    }
     try {
       await widget.repository.setTemplate(template.id);
       if (!mounted) return;
