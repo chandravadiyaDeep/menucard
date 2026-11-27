@@ -43,6 +43,37 @@ class _OfflineAccountGateState extends State<OfflineAccountGate> {
     } catch (error) { if (mounted) { setState(() => _message = error.toString()); } }
   }
 
+  Future<void> _restoreAccount() async {
+    try {
+      final picked = await FilePicker.pickFile(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+      if (picked == null) return;
+      final approved = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Restore MenuCard account?'),
+          content: const Text('This restores your private account registry on this phone. Keep the original backup in a safe place.'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+            FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('Restore account')),
+          ],
+        ),
+      );
+      if (approved != true) return;
+      await widget.repository.restoreRecoveryJson(await picked.readAsString());
+      if (mounted) {
+        setState(() {
+          _unlocked = widget.repository.hasAccount;
+          _message = _unlocked ? 'Account restored successfully.' : 'Backup restored, but it contains no active account.';
+        });
+      }
+    } catch (error) {
+      if (mounted) { setState(() => _message = error.toString()); }
+    }
+  }
+
   Future<void> _claim() async {
     setState(() { _busy = true; _message = null; });
     try {
@@ -75,7 +106,13 @@ class _OfflineAccountGateState extends State<OfflineAccountGate> {
           FilledButton(onPressed: _busy ? null : _claim, child: Text(_busy ? 'Checking code…' : 'Activate MenuCard')),
           const SizedBox(height: 12),
           OutlinedButton.icon(onPressed: _busy ? null : _importBatch, icon: const Icon(Icons.file_upload_outlined),
-            label: const Text('Owner: import issued code batch')),
+            label: const Text('Import my personal access-code file')),
+          const SizedBox(height: 8),
+          TextButton.icon(
+            onPressed: _busy ? null : _restoreAccount,
+            icon: const Icon(Icons.restore_rounded),
+            label: const Text('Restore account from backup'),
+          ),
           if (_message != null) ...[
             const SizedBox(height: 14),
             Text(_message!, textAlign: TextAlign.center, style: const TextStyle(color: Color(0xFF9B4A36))),
