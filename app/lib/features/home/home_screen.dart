@@ -113,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _overviewPage(document),
                   _menuPage(document),
                   _templatePage(document),
-                  _publishPage(document),
+                  _publishPage(),
                 ],
               ),
             ),
@@ -846,7 +846,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Widget _publishPage(MenuDocument document) => QrMenuScreen(
+  Widget _publishPage() => QrMenuScreen(
         repository: widget.repository,
         locale: _locale,
       );
