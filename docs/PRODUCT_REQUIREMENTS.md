@@ -53,7 +53,13 @@ Support Gujarati, Hindi and English. Owners enter translations manually; no auto
 - Owners can switch templates at any time without rebuilding the menu content.
 
 ### Customer preview
-A customer-style preview reads the same local JSON document and selected template, and works offline.
+A full customer-style preview reads the same local JSON document and selected template using the exact bundled customer HTML/CSS/JavaScript renderer. Local photos are embedded into the preview session so it works offline without uploading anything.
+
+### Menu search and editing
+- Owner search matches dish names and descriptions across saved translations and category names.
+- Filter the owner menu by category and availability (all, available, paused).
+- Customer-facing static menus provide a live search field across dish names, descriptions and categories.
+- Price entry accepts up to two decimal places. Deleting an item requires explicit confirmation.
 
 ### Manual publishing
 - Export a ZIP/folder containing index.html, static viewer assets, menu.json and referenced public images.
@@ -81,7 +87,8 @@ Ordering, checkout, payment processing, reservations, table management, loyalty,
 - Shop/profile/category/item creation and editing work offline.
 - JSON survives force-close/restart and malformed imports are rejected safely.
 - Gujarati/Hindi/English render and fallback works.
-- Preview reflects the current local JSON.
+- Full customer preview reflects the current local JSON and uses the same HTML/CSS/JavaScript renderer as website export.
+- Owner and customer menu search filter results correctly without modifying saved JSON.
 - Backup export/import round-trip preserves data.
 - Publish package contains a working static customer page and valid menu JSON.
 - Replacing the hosted package at the same path updates the customer menu without changing the QR URL, subject to host cache revalidation.
