@@ -77,6 +77,7 @@ void main() {
 
     final publicJson = repository.document.toPublicJson();
     expect(publicJson.containsKey('local_publish'), isFalse);
+    expect(publicJson.containsKey('qr_menu_url'), isFalse);
     final item = (publicJson['categories'] as List).single['items'].single as Map;
     expect(item.containsKey('image_path'), isFalse);
     expect(item['image'], 'assets/images/private-image.jpg');
