@@ -51,6 +51,16 @@
 - [x] V1.1.2 quality run, release-mode APK build, checksum and GitHub Release upload completed successfully.
 - [x] Latest APK is published as the `v1.1.2` GitHub Release and the landing page resolves the latest APK dynamically.
 
+## V1.1.3 simplified QR Publish (main)
+- [x] Publish tab is now a single-purpose menu QR generator; website export/upload/confirmation steps have been removed from that tab.
+- [x] Public HTTPS menu URL is entered once and saved as local-only QR metadata in the versioned JSON document.
+- [x] Existing published URL is used as the initial QR destination for backward compatibility.
+- [x] QR preview appears in the app after generation.
+- [x] High-resolution PNG export and A4 PDF export are generated on-device and opened in the Android share sheet for sharing/saving.
+- [x] QR destination is excluded from customer-facing public JSON.
+- [x] Private backup/restore remain accessible from the app-bar backup menu, outside Publish.
+- [ ] V1.1.3 formatting, static analysis, widget/repository tests and APK build are pending CI.
+- [ ] Physical Android QA for QR scanning, PNG/PDF export and share sheet is pending.
 ## Template-first implementation verification
 - [x] Template gallery, template persistence, 120-design catalog and static customer renderer passed Flutter formatting, static analysis and automated tests in Android workflow run #35.
 - [ ] Physical device visual QA for the 120-template gallery and customer menu is pending.
