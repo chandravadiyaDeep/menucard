@@ -221,7 +221,7 @@ void main() {
     await tester.tap(find.text('Publish'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Create your menu QR'), findsOneWidget);
+    expect(find.text('Your menu QR code'), findsOneWidget);
     expect(find.text('Export website package'), findsNothing);
     expect(find.text('I uploaded and checked this menu'), findsNothing);
     expect(find.byKey(const ValueKey('generated-menu-qr')), findsOneWidget);
