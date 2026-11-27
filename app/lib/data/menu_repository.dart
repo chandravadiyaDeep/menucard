@@ -112,7 +112,10 @@ class MenuRepository extends ChangeNotifier {
     if (!MenuTemplateCatalog.all.any((template) => template.id == templateId)) {
       throw ArgumentError('Choose a valid ready-made menu design.');
     }
-    await _mutate((next) => next.templateId = templateId);
+    await _mutate((next) {
+      next.templateId = templateId;
+      next.templateSelected = true;
+    });
   }
 
   Future<void> deleteCategory(String id, {required bool deleteItems}) async {
