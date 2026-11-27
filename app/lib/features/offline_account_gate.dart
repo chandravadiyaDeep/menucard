@@ -27,11 +27,14 @@ class _OfflineAccountGateState extends State<OfflineAccountGate> {
 
   Future<void> _importPersonalCode() async {
     try {
-      final result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: ['json'], withData: true);
-      if (result == null || result.files.single.bytes == null) {
+      final picked = await FilePicker.pickFile(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+      if (picked == null) {
         return;
       }
-      final data = jsonDecode(utf8.decode(result.files.single.bytes!));
+      final data = jsonDecode(utf8.decode(await picked.readAsBytes()));
       if (data is! Map || data['schema_version'] != 1) {
         throw const FormatException('Choose a valid personal MenuCard access-code file.');
       }
@@ -55,7 +58,7 @@ class _OfflineAccountGateState extends State<OfflineAccountGate> {
         type: FileType.custom,
         allowedExtensions: ['json'],
       );
-      if (picked == null) {
+      if (picked == null || !mounted) {
         return;
       }
       final approved = await showDialog<bool>(
@@ -69,7 +72,7 @@ class _OfflineAccountGateState extends State<OfflineAccountGate> {
           ],
         ),
       );
-      if (approved != true) {
+      if (approved != true || !mounted) {
         return;
       }
       await widget.repository.restoreRecoveryJson(utf8.decode(await picked.readAsBytes()));
