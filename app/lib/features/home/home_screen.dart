@@ -317,7 +317,9 @@ class _HomeScreenState extends State<HomeScreen> {
         for (final category in types[shopType]![language]!) {
           await widget.repository.saveCategory(title: category, locale: language);
         }
-        if (!mounted) return;
+        if (!mounted) {
+          return;
+        }
         setState(() { _locale = language; _tab = 1; });
         _message('Your shop is ready. Add your first dishes and prices!');
       } catch (error) {
@@ -1045,7 +1047,9 @@ class _HomeScreenState extends State<HomeScreen> {
     if (approved == true) {
       try {
         await widget.repository.deleteCategory(category.id, deleteItems: true);
-        if (_categoryFilter == category.id) setState(() => _categoryFilter = 'all');
+        if (_categoryFilter == category.id) {
+          setState(() => _categoryFilter = 'all');
+        }
         _message('Category deleted.');
       } catch (error) {
         _message(_cleanError(error));
@@ -1072,7 +1076,9 @@ class _HomeScreenState extends State<HomeScreen> {
     if (approved == true) {
       try {
         await widget.repository.deleteItem(item.id);
-        if (mounted) _message('Menu item deleted.');
+        if (mounted) {
+          _message('Menu item deleted.');
+        }
       } catch (error) {
         _message(_cleanError(error));
       }
