@@ -31,8 +31,12 @@ class MenuCardApp extends StatelessWidget {
         navigationBarTheme: const NavigationBarThemeData(backgroundColor: Color(0xFFFFFEFA), indicatorColor: Color(0xFFDCE9E1),
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow),
       ),
-      home: accountRepository == null ? HomeScreen(repository: repository)
-        : OfflineAccountGate(repository: accountRepository!, child: HomeScreen(repository: repository)),
+      home: accountRepository == null
+          ? HomeScreen(repository: repository)
+          : OfflineAccountGate(
+              repository: accountRepository!,
+              child: HomeScreen(repository: repository, accountRepository: accountRepository),
+            ),
     );
   }
 }
