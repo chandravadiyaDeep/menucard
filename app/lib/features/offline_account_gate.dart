@@ -28,7 +28,9 @@ class _OfflineAccountGateState extends State<OfflineAccountGate> {
   Future<void> _importPersonalCode() async {
     try {
       final result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: ['json'], withData: true);
-      if (result == null || result.files.single.bytes == null) return;
+      if (result == null || result.files.single.bytes == null) {
+        return;
+      }
       final data = jsonDecode(utf8.decode(result.files.single.bytes!));
       if (data is! Map || data['schema_version'] != 1) {
         throw const FormatException('Choose a valid personal MenuCard access-code file.');
@@ -53,7 +55,9 @@ class _OfflineAccountGateState extends State<OfflineAccountGate> {
         type: FileType.custom,
         allowedExtensions: ['json'],
       );
-      if (picked == null) return;
+      if (picked == null) {
+        return;
+      }
       final approved = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
@@ -65,7 +69,9 @@ class _OfflineAccountGateState extends State<OfflineAccountGate> {
           ],
         ),
       );
-      if (approved != true) return;
+      if (approved != true) {
+        return;
+      }
       await widget.repository.restoreRecoveryJson(utf8.decode(await picked.readAsBytes()));
       if (mounted) {
         setState(() {
@@ -89,7 +95,9 @@ class _OfflineAccountGateState extends State<OfflineAccountGate> {
 
   @override
   Widget build(BuildContext context) {
-    if (_unlocked) return widget.child;
+    if (_unlocked) {
+      return widget.child;
+    }
     return Scaffold(body: SafeArea(child: Center(child: SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 440), child: Column(
@@ -109,7 +117,7 @@ class _OfflineAccountGateState extends State<OfflineAccountGate> {
           const SizedBox(height: 18),
           FilledButton(onPressed: _busy ? null : _claim, child: Text(_busy ? 'Checking code…' : 'Activate MenuCard')),
           const SizedBox(height: 12),
-          OutlinedButton.icon(onPressed: _busy ? null : _importBatch, icon: const Icon(Icons.file_upload_outlined),
+          OutlinedButton.icon(onPressed: _busy ? null : _importPersonalCode, icon: const Icon(Icons.file_upload_outlined),
             label: const Text('Import my personal access-code file')),
           const SizedBox(height: 8),
           TextButton.icon(
