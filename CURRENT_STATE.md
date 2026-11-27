@@ -99,7 +99,7 @@
 - Keep the app entirely local-first and add useful comments to new code.
 
 
-## V1.2.0 offline owner-issued account implementation (PR #3)
+## V1.2.0 offline owner-issued account implementation (merged to main)
 - [x] App-private `accounts.json` registry, separate from public menu JSON.
 - [x] Personal access-code file import; only salted SHA-256 digests are persisted.
 - [x] One-time code claim per installation, mobile identifier and shop-name registration.
@@ -108,11 +108,12 @@
 - [x] Private account recovery JSON export from the owner workspace.
 - [x] Account recovery JSON restore from the activation screen on a replacement phone.
 - [x] Existing installs with a pre-existing menu file are grandfathered to avoid locking out current owners.
-- [x] Added repository tests for code import, duplicate claim, duplicate mobile, recovery, invalid backup and legacy migration.
-- [x] Updated README and architecture contract to reflect local offline accounts.
-- [ ] CI formatting/analyzer/tests/APK build and generator validation are running in PR #3.
-- [ ] Publish a clearly labeled debug-signed physical-testing APK and update the website download target after CI passes.
-- [ ] Physical Android testing is the only planned manual QA step after automated validation and test APK publication.
+- [x] Repository tests cover code import, duplicate claim, duplicate mobile, recovery, invalid backup and legacy migration.
+- [x] README, website and architecture contract updated for offline owner-issued activation.
+- [x] PR #3 merged to main: https://github.com/chandravadiyaDeep/menucard/pull/3
+- [x] Formatting, Flutter analyzer, Flutter tests, owner-code generator checks, JavaScript syntax and customer renderer tests passed in Android workflow run #46059745026.
+- [x] GitHub Pages website deployment succeeded in run #46059968325.
+- [ ] Release-mode APK build, checksum and V1.2.0 physical-testing GitHub Release are running in workflow #46059745026.
+- [ ] Physical Android testing is the only planned manual QA step after APK publication.
 - Cross-device single-use is controlled by the issuer's private CSV ledger; offline app instances cannot coordinate. Phone numbers are identifiers, not verified identity.
-- Production signing is intentionally not configured for the physical-testing APK. Do not describe the test APK as production-signed or Play Store-ready.
-
+- The physical-testing APK uses the Android debug key. It is not a production-signed or Play Store-ready release.
