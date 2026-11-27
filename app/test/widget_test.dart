@@ -114,6 +114,7 @@ void main() {
     expect(searchField, findsOneWidget);
     await tester.enterText(searchField, 'chai');
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Masala Chai'), 250);
 
     expect(find.text('Masala Chai'), findsOneWidget);
     expect(find.text('Samosa'), findsNothing);
