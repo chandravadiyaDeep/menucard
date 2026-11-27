@@ -122,15 +122,23 @@ void main() {
     // Empty results expose one-tap filter reset instead of trapping the owner.
     await tester.enterText(searchField, 'not-a-real-dish');
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Clear all filters'), 250);
     expect(find.text('Clear all filters'), findsOneWidget);
     await tester.tap(find.text('Clear all filters'));
     await tester.pumpAndSettle();
-    expect(find.text('Masala Chai'), findsOneWidget);
-    expect(find.text('Samosa'), findsOneWidget);
 
-    // Availability chips narrow the menu without changing the saved items.
-    await tester.tap(find.text('Paused'));
+    // Confirm the search text and availability/category chips all reset.
+    expect(tester.widget<TextField>(searchField).controller!.text, isEmpty);
+    final allItemsChip = find.widgetWithText(ChoiceChip, 'All items');
+    expect(tester.widget<ChoiceChip>(allItemsChip).selected, isTrue);
+    final pausedChip = find.widgetWithText(ChoiceChip, 'Paused');
+    expect(tester.widget<ChoiceChip>(pausedChip).selected, isFalse);
+
+    // Availability filters are reachable and narrow results without deleting data.
+    await tester.scrollUntilVisible(pausedChip, -250);
+    await tester.tap(pausedChip);
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Samosa'), 250);
     expect(find.text('Samosa'), findsOneWidget);
     expect(find.text('Masala Chai'), findsNothing);
 
@@ -168,6 +176,7 @@ void main() {
 
     await tester.pumpWidget(MenuCardApp(repository: repository));
     await tester.pump(const Duration(milliseconds: 100));
+    await tester.scrollUntilVisible(find.byKey(const ValueKey('home-customer-preview')), 250);
     expect(find.byKey(const ValueKey('home-customer-preview')), findsOneWidget);
 
     await tester.tap(find.text('My menu'));
