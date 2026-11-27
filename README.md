@@ -11,9 +11,9 @@ A polished offline-first Android app for small local businesses to create, manag
 - Export and restore a private backup that includes menu data and selected photos.
 
 ## Architecture
-Option B is locked: local JSON + manual static publishing. No MenuCard backend, API server, Worker, remote database, account system or automatic synchronization. Static hosting only serves static HTML, CSS, JavaScript, JSON and images uploaded by the owner.
+Menu data and owner accounts are stored as app-private local JSON. Account activation uses individual owner-issued offline codes; the issuer keeps a private CSV ledger because no offline app can enforce cross-device single-use. Public publishing remains a manual static website upload. No MenuCard backend, API server, Worker, remote database or automatic synchronization is used. Static hosting only serves static HTML, CSS, JavaScript, JSON and images uploaded by the owner.
 
-See [manual publishing instructions](docs/STATIC_PUBLISHING.md), [architecture](docs/ARCHITECTURE.md), and [release instructions](app/RELEASE.md).
+See [manual publishing instructions](docs/STATIC_PUBLISHING.md), [architecture](docs/ARCHITECTURE.md), [offline account workflow](docs/OFFLINE_ACCOUNTS.md), and [release instructions](app/RELEASE.md).
 
 ## Build status
 The Flutter source is being migrated to the V1 JSON-first architecture. GitHub Actions runs formatting, static analysis, automated tests and an APK build. A passing CI artifact is a release-mode candidate; production signing and physical-device QA are required before production distribution.
