@@ -188,8 +188,7 @@ void main() {
     await tester.tap(find.text('My menu'));
     await tester.pumpAndSettle();
     final menuPreview = find.byKey(const ValueKey('menu-customer-preview'));
-    final menuPreviewScrollable = find.ancestor(of: menuPreview, matching: find.byType(Scrollable));
-    await tester.scrollUntilVisible(menuPreview, 250, scrollable: menuPreviewScrollable);
+    // The menu preview action sits directly below the menu editor heading.
     expect(menuPreview, findsOneWidget);
 
     await tester.pumpWidget(const SizedBox.shrink());
