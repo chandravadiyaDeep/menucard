@@ -199,4 +199,52 @@ void main() {
     });
   });
 
+  testWidgets('Publish tab only needs a public link to generate and share a QR', (tester) async {
+    late Directory sandbox;
+    late MenuRepository repository;
+
+    // The QR screen uses the real local repository but no network or share plugin.
+    await tester.runAsync(() async {
+      sandbox = await Directory.systemTemp.createTemp('menucard-qr-');
+      repository = await MenuRepository.openAt(File('${sandbox.path}/menu.json'));
+      await repository.saveShop(
+        name: 'QR Cafe',
+        description: '',
+        translationLocale: 'en',
+        defaultLocale: 'en',
+      );
+    });
+
+    await tester.pumpWidget(MenuCardApp(repository: repository));
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.tap(find.text('Publish'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Create your menu QR'), findsOneWidget);
+    expect(find.text('Export website package'), findsNothing);
+    expect(find.text('I uploaded and checked this menu'), findsNothing);
+
+    final urlField = find.byKey(const ValueKey('qr-menu-url'));
+    await tester.enterText(urlField, 'http://example.com/menu');
+    await tester.tap(find.byKey(const ValueKey('generate-menu-qr')));
+    await tester.pumpAndSettle();
+    expect(find.text('Enter a valid public HTTPS menu link.'), findsOneWidget);
+    expect(find.byKey(const ValueKey('generated-menu-qr')), findsNothing);
+
+    await tester.enterText(urlField, 'https://example.com/menu');
+    await tester.tap(find.byKey(const ValueKey('generate-menu-qr')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('generated-menu-qr')), findsOneWidget);
+    expect(find.byKey(const ValueKey('share-qr-png')), findsOneWidget);
+    expect(find.byKey(const ValueKey('share-qr-pdf')), findsOneWidget);
+    expect(repository.document.qrMenuUrl, 'https://example.com/menu');
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.runAsync(() async {
+      repository.dispose();
+      await sandbox.delete(recursive: true);
+    });
+  });
+
 }
