@@ -41,14 +41,15 @@ class OfflineAccountRepository {
   // Owner imports codes generated with the local tool; raw codes are never persisted.
   Future<int> importCodes(Iterable<String> codes) async {
     final records = (_state['issued_codes'] as List).cast<Map<String, dynamic>>();
-    final existing = records.map((r) => r['hash']).toSet();
     var added = 0;
     for (final raw in codes) {
       final code = _normalizeCode(raw);
       if (code.length < 10) continue;
       final salt = _randomHex(16);
       final hash = _hash(code, salt);
-      if (existing.add(hash)) {
+      final alreadyImported = records.any((record) =>
+          _hash(code, record['salt'] as String) == record['hash']);
+      if (!alreadyImported) {
         records.add({'salt': salt, 'hash': hash, 'status': 'available', 'claimed_by': null});
         added++;
       }
