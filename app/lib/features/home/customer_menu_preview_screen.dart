@@ -37,33 +37,37 @@ class _CustomerMenuPreviewScreenState extends State<CustomerMenuPreviewScreen> {
       final publicMenu = widget.document.toPublicJson();
       final categories = publicMenu['categories'] as List<dynamic>;
 
-      // Preview images are embedded as data URLs so the preview works fully offline.
-      for (final rawCategory in categories) {
-        final category = Map<String, dynamic>.from(rawCategory as Map);
+      // Index photo paths once so large menus do not perform a full scan per dish.
+      final imagePathsById = <String, String>{
+        for (final item in widget.document.categories.expand((category) => category.items))
+          if (item.imagePath != null) item.id: item.imagePath!,
+      };
+
+      // Embed local photos as data URLs so the exact preview works without internet access.
+      for (var categoryIndex = 0; categoryIndex < categories.length; categoryIndex++) {
+        final category = Map<String, dynamic>.from(categories[categoryIndex] as Map);
         final items = category['items'] as List<dynamic>? ?? [];
-        for (final rawItem in items) {
-          final item = Map<String, dynamic>.from(rawItem as Map);
-          final matchingSources = widget.document.categories
-              .expand((entry) => entry.items)
-              .where((entry) => entry.id == item['id'])
-              .toList();
-          final source = matchingSources.isEmpty ? null : matchingSources.first;
-          final imagePath = source?.imagePath;
+        for (var itemIndex = 0; itemIndex < items.length; itemIndex++) {
+          final item = Map<String, dynamic>.from(items[itemIndex] as Map);
+          final imagePath = imagePathsById[item['id']?.toString()];
           if (imagePath != null) {
             final imageFile = File(imagePath);
             if (await imageFile.exists()) {
               final extension = imagePath.split('.').last.toLowerCase();
-              final mime = extension == 'png' ? 'image/png' : extension == 'webp' ? 'image/webp' : 'image/jpeg';
+              final mime = extension == 'png'
+                  ? 'image/png'
+                  : extension == 'webp'
+                      ? 'image/webp'
+                      : 'image/jpeg';
               item['image'] = 'data:$mime;base64,${base64Encode(await imageFile.readAsBytes())}';
             } else {
               item['image'] = null;
             }
           }
-          items[items.indexOf(rawItem)] = item;
+          items[itemIndex] = item;
         }
-        rawCategory
-          ..clear()
-          ..addAll(category);
+        category['items'] = items;
+        categories[categoryIndex] = category;
       }
 
       // Escape HTML-sensitive characters before embedding owner content in a script.
@@ -85,9 +89,14 @@ class _CustomerMenuPreviewScreenState extends State<CustomerMenuPreviewScreen> {
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
         ..setBackgroundColor(Color(MenuTemplateCatalog.byId(widget.document.templateId).backgroundColor))
         ..setNavigationDelegate(NavigationDelegate(
-          onNavigationRequest: (request) => request.url.startsWith('data:') || request.url.startsWith('about:')
-              ? NavigationDecision.navigate
-              : NavigationDecision.prevent,
+          // Allow only embedded images and the synthetic local preview origin.
+          // External links/navigation stay blocked so preview never leaves the app.
+          onNavigationRequest: (request) =>
+              request.url.startsWith('data:') ||
+              request.url.startsWith('about:') ||
+              request.url.startsWith('https://menucard.local/')
+                  ? NavigationDecision.navigate
+                  : NavigationDecision.prevent,
         ));
       await controller.loadHtmlString(customerHtml, baseUrl: 'https://menucard.local/');
       if (!mounted) return;
