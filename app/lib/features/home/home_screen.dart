@@ -282,7 +282,9 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (_) => _GuidedSetupDialog(initialLanguage: _document.defaultLocale),
     );
 
-    if (setup == null) return;
+    if (setup == null) {
+      return;
+    }
     try {
       await widget.repository.saveShop(
         name: setup.shopName,
@@ -294,7 +296,9 @@ class _HomeScreenState extends State<HomeScreen> {
       for (final category in types[setup.shopType]![setup.language]!) {
         await widget.repository.saveCategory(title: category, locale: setup.language);
       }
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       setState(() {
         _locale = setup.language;
         _tab = 1;
