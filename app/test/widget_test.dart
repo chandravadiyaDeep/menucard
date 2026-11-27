@@ -127,6 +127,9 @@ void main() {
     await tester.tap(find.text('Clear all filters'));
     await tester.pumpAndSettle();
 
+    // Return to the filter controls after the clear action rebuilds the longer menu.
+    await tester.scrollUntilVisible(searchField, -250);
+
     // Confirm the search text and availability/category chips all reset.
     expect(tester.widget<TextField>(searchField).controller!.text, isEmpty);
     final allItemsChip = find.widgetWithText(ChoiceChip, 'All items');
@@ -135,7 +138,6 @@ void main() {
     expect(tester.widget<ChoiceChip>(pausedChip).selected, isFalse);
 
     // Availability filters are reachable and narrow results without deleting data.
-    await tester.scrollUntilVisible(pausedChip, -250);
     await tester.tap(pausedChip);
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.text('Samosa'), 250);
