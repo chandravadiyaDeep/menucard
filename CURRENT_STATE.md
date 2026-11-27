@@ -35,6 +35,16 @@
 - [x] Repository tests for first-run storage, persistence, public export privacy, validation, category deletion, URL confirmation, recovery, concurrent writes and item edit/move behavior.
 - [x] Dashboard widget smoke test.
 
+## V1.1.1 preview/search/editor work (feature branch)
+- [x] Full-screen customer preview uses the same bundled HTML/CSS/JavaScript renderer as the static exported website.
+- [x] Preview injects the local public JSON snapshot and embeds local photos as data URLs; no server or network is needed.
+- [x] Owner menu search covers dish names/descriptions across translations and category names.
+- [x] Owner filters by category and availability; customer menu has live search.
+- [x] Price input limits values to two decimal places and item deletion requires confirmation.
+- [x] Added Node renderer test and CI workflow to format/analyze/test/build Android APK and publish the verified APK as a GitHub Release asset.
+- [x] Marketing page resolves the latest official release APK dynamically.
+- [ ] PR CI, release APK, GitHub Release asset and live Pages download link still require verification.
+
 ## Template-first implementation verification
 - [x] Template gallery, template persistence, 120-design catalog and static customer renderer passed Flutter formatting, static analysis and automated tests in Android workflow run #35.
 - [ ] Physical device visual QA for the 120-template gallery and customer menu is pending.
@@ -53,11 +63,11 @@
 - No permanent production signing keystore has been configured in GitHub Actions secrets.
 - Main-branch release-mode artifacts are installable test candidates, not production/Play Store signed releases.
 - No physical Android device QA or public static-host upload verification has been completed.
-- No production APK is currently published.
+- No production APK is currently published. The V1.1.1 branch adds an automated GitHub Release workflow, but no APK should be advertised until the workflow succeeds and publishes its asset.
 - See app/RELEASE.md for the four required signing secrets and secure release process.
 
 ## Remaining quality gates
-1. Confirm the release-mode APK build and retrieve its Actions artifact.
+1. Verify V1.1.1 PR CI, release-mode APK build and GitHub Release asset.
 2. Install and test on physical Android devices: fresh install, persistence after force-close, menu CRUD, template gallery, customer preview/export, image import/export, backup/restore, share sheet and QR.
 3. Upload a generated customer package to a suitable static host, verify replacement/cache behavior and scan the QR.
 4. Configure persistent signing secrets before creating a production release tag.
