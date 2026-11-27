@@ -42,10 +42,11 @@ class _CustomerMenuPreviewScreenState extends State<CustomerMenuPreviewScreen> {
         final items = category['items'] as List<dynamic>? ?? [];
         for (final rawItem in items) {
           final item = Map<String, dynamic>.from(rawItem as Map);
-          final source = widget.document.categories
+          final matchingSources = widget.document.categories
               .expand((entry) => entry.items)
               .where((entry) => entry.id == item['id'])
-              .firstOrNull;
+              .toList();
+          final source = matchingSources.isEmpty ? null : matchingSources.first;
           final imagePath = source?.imagePath;
           if (imagePath != null) {
             final imageFile = File(imagePath);
