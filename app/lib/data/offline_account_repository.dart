@@ -83,7 +83,7 @@ class OfflineAccountRepository {
   Future<void> register({required String mobile, required String code, required String shopName}) async {
     final phone = _normalizePhone(mobile);
     final digits = phone.replaceAll('+', '');
-    if (digits.length < 10 || digits.length > 15 || phone.startsWith('+') && phone.indexOf('+', 1) != -1) {
+    if (digits.length < 10 || digits.length > 15) {
       throw ArgumentError('Enter a valid mobile number.');
     }
     if (shopName.trim().isEmpty) throw ArgumentError('Enter your shop name.');
@@ -167,11 +167,7 @@ class OfflineAccountRepository {
     await temp.rename(_file.path);
   }
 
-  static String _normalizePhone(String value) {
-    final trimmed = value.trim();
-    final digits = trimmed.replaceAll(RegExp(r'[^0-9]'), '');
-    return trimmed.startsWith('+') ? '+$digits' : digits;
-  }
+  static String _normalizePhone(String value) => value.replaceAll(RegExp(r'[^0-9]'), '');
   static String _normalizeCode(String value) => value.toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
   static String _hash(String code, String salt) => sha256.convert(utf8.encode('$salt:$code')).toString();
   static String _randomHex(int bytes) {
