@@ -1,26 +1,30 @@
 # Offline owner-issued account architecture
 
 ## Product contract
-MenuCard account registration works without internet, cloud services, a backend, a database server, or phone-number OTP. The owner generates access codes on a trusted computer and distributes one code to each shop owner.
+MenuCard account activation works without internet, cloud services, a backend, database server, or phone-number OTP. The issuer creates access codes on a trusted computer and distributes one personal code file to each shop owner.
 
-## Issuance workflow
-1. Run `python tools/generate_owner_codes.py` on the owner's trusted computer.
-2. Keep the generated CSV as the issuer's master ledger. It contains the code, status and assigned mobile.
-3. Deliver one code privately to one shop owner and record the mobile assignment in the ledger.
-4. Import the corresponding JSON code batch into that owner's MenuCard installation using the owner/admin import flow.
-5. The app claims a code once in its local `accounts.json` registry and associates it with the entered mobile and shop name.
+## Issuer workflow
+1. Run `python tools/generate_owner_codes.py` on the trusted issuer computer.
+2. The script creates 100 individual JSON files in `menucard-issued-codes/`, a ZIP containing those personal files, and a private CSV master ledger.
+3. Keep the CSV private. Before distribution, mark one serial as assigned and record the recipient's mobile number.
+4. Send only that recipient's personal JSON file. Do not send the full ZIP or ledger to a shop owner.
+5. The shop imports their personal JSON file in MenuCard, enters their mobile number and shop name, and activates the account offline.
 
 ## Hard offline boundary
-The app can prevent a code from being claimed twice **on the same installation**. It cannot discover a claim on another phone. The issuer's private ledger is the authority for cross-device uniqueness; mark a code assigned before distributing it. Never describe this as globally enforced by the app.
+The app prevents a code from being claimed twice on the same installation. It cannot discover a claim on another phone. The issuer's private CSV ledger is the cross-device source of truth; mark codes assigned before distribution. Never describe this as globally enforced by the app.
 
-## Storage and recovery
+## Local storage and recovery
 - Account registry: app-private `accounts.json`, separate from public menu exports.
-- Only salted SHA-256 digests of issued codes are stored by the app; raw codes remain in the issuer's private ledger.
-- Recovery is by exporting the private account backup and restoring it on the replacement phone. Phone number alone is not proof of ownership and must never disclose a code.
-- A restored backup duplicates the local registry; retire/wipe the old installation after a successful move.
-- Phone numbers are identifiers only. Without SMS or another trusted verification channel, the app cannot prove control of a number.
+- Only salted SHA-256 digests of issued codes are stored by the app; raw codes are not persisted in the registry.
+- The account activation screen can restore a private account recovery JSON backup on a replacement phone.
+- The owner workspace provides a separate account recovery export action. It is distinct from the menu backup.
+- Phone number alone is not proof of ownership and cannot retrieve an access code offline.
+- Existing installations that already contained a MenuCard menu are grandfathered during the first account migration so their local data is not unexpectedly locked.
+- A restored backup duplicates the local registry. Retire the old installation after a successful move.
 
-## Operational security
-- Generate codes with a cryptographically secure random generator; keep the issuer CSV offline and access-controlled.
-- Do not commit real issued codes, customer mobile numbers, backups, or signing credentials.
-- If an owner loses both the phone and recovery backup, the issuer may issue a replacement code after manually verifying the owner outside the app and revoking the old ledger entry.
+## Security and privacy
+- Generate codes using Python's cryptographically secure `secrets` module; each code contains 75 bits of randomness.
+- The issuer CSV contains raw codes and mobile assignments; store it offline and access-control it.
+- Do not commit issued-code files, CSV ledgers, customer mobile numbers, backups, or signing credentials.
+- Mobile numbers are identifiers only. Without SMS or another trusted verification channel, the app cannot prove control of a number.
+- If a code is lost, the issuer must manually verify the owner outside the app and issue a replacement from the private ledger. The app cannot perform remote "Get My Code" recovery without a trusted communication channel.
