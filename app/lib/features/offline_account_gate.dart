@@ -27,24 +27,29 @@ class _OfflineAccountGateState extends State<OfflineAccountGate> {
 
   Future<void> _importBatch() async {
     try {
-      final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['json'], withData: true);
+      final result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: ['json'], withData: true);
       if (result == null || result.files.single.bytes == null) return;
       final data = jsonDecode(utf8.decode(result.files.single.bytes!));
-      if (data is! Map || data['schema_version'] != 1 || data['codes'] is! List) {
-        throw const FormatException('Choose the JSON file created by the MenuCard owner code generator.');
+      if (data is! Map || data['schema_version'] != 1) {
+        throw const FormatException('Choose a valid personal MenuCard access-code file.');
       }
-      final count = await widget.repository.importCodes((data['codes'] as List).whereType<String>());
-      if (mounted) setState(() => _message = '$count new codes imported on this device.');
-    } catch (error) { if (mounted) setState(() => _message = error.toString()); }
+      // Each shop receives one personal code file, not the issuer's full code batch.
+      final code = data['code'];
+      if (code is! String || code.trim().isEmpty) {
+        throw const FormatException('This file does not contain one personal access code.');
+      }
+      final count = await widget.repository.importCodes([code]);
+      if (mounted) { setState(() => _message = count == 1 ? 'Your personal code is ready. Activate your account.' : 'This code was already imported on this device.'); }
+    } catch (error) { if (mounted) { setState(() => _message = error.toString()); } }
   }
 
   Future<void> _claim() async {
     setState(() { _busy = true; _message = null; });
     try {
       await widget.repository.register(mobile: _mobile.text, code: _code.text, shopName: _shop.text);
-      if (mounted) setState(() => _unlocked = true);
-    } catch (error) { if (mounted) setState(() => _message = error.toString()); }
-    finally { if (mounted) setState(() => _busy = false); }
+      if (mounted) { setState(() => _unlocked = true); }
+    } catch (error) { if (mounted) { setState(() => _message = error.toString()); } }
+    finally { if (mounted) { setState(() => _busy = false); } }
   }
 
   @override
