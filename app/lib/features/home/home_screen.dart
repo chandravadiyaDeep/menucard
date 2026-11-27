@@ -1113,7 +1113,13 @@ class _HomeScreenState extends State<HomeScreen> {
           TextField(
             controller: price,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
+            // Reject a third decimal digit without unexpectedly deleting the whole field.
+            inputFormatters: [
+              TextInputFormatter.withFunction((oldValue, newValue) {
+                final valid = RegExp(r'^\d*\.?\d{0,2}$').hasMatch(newValue.text);
+                return valid ? newValue : oldValue;
+              }),
+            ],
             decoration: const InputDecoration(labelText: 'Price in ₹', prefixText: '₹ ', helperText: 'Use up to 2 decimal places'),
           ),
           const SizedBox(height: 10),
