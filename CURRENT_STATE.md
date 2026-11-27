@@ -6,6 +6,12 @@
 - https://github.com/chandravadiyaDeep/menucard
 - Default branch: main; GitHub Pages hosts the product landing page.
 
+## Product direction update — template-first digital menu designer
+- [x] Shop profile and menu data are entered once, then bound into a ready-made template.
+- [x] 120 selectable designs: 10 layout families × 12 color themes.
+- [x] Selected design is stored as a stable `template_id`; dish names/prices remain independent of presentation.
+- [x] Customer static viewer applies the selected design automatically.
+
 ## Locked architecture
 - [x] Option B: app-private local JSON is the single source of truth.
 - [x] All owner-side business logic runs on-device.
@@ -22,9 +28,16 @@
 - [x] On-device static website ZIP export.
 - [x] Private backup ZIP export and guarded backup restore.
 - [x] Local publish revision state, HTTPS URL confirmation and QR generation.
-- [x] Material 3 owner dashboard with Home, My Menu and Publish navigation.
+- [x] Owner navigation includes Home, My menu, Designs and Publish.
+- [x] Guided 3-step setup card: shop profile → dishes/prices → choose a design.
+- [x] Data-driven template catalog and gallery with 120 combinations.
+- [x] Customer static viewer binds menu JSON to the selected layout/theme.
 - [x] Repository tests for first-run storage, persistence, public export privacy, validation, category deletion, URL confirmation, recovery, concurrent writes and item edit/move behavior.
 - [x] Dashboard widget smoke test.
+
+## Template-first implementation verification
+- [ ] Template gallery and customer renderer have not yet passed CI after this change.
+- [ ] Physical device visual QA for the 120-template gallery and customer menu is pending.
 
 ## CI verification
 - [x] Flutter formatting step completed.
@@ -44,7 +57,8 @@
 - See app/RELEASE.md for the four required signing secrets and secure release process.
 
 ## Remaining quality gates
-1. Confirm the current APK build and retrieve the Actions artifact.
+1. Run the new template-first changes through Flutter format, analyzer, tests and APK build; fix any regressions.
+2. Confirm the APK artifact and install it on Android devices.
 2. Install and test on Android devices: fresh install, persistence after force-close, menu CRUD, image import/export, backup/restore, share sheet, website ZIP and QR.
 3. Upload the generated package to a suitable static host, verify replacement/cache behavior and scan the QR.
 4. Configure persistent signing secrets before creating a production release tag.
