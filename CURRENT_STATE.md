@@ -1,6 +1,6 @@
 # Current State
 
-**Updated:** 2026-11-27
+**Updated:** 2026-11-28
 
 ## Repository
 - https://github.com/chandravadiyaDeep/menucard
@@ -97,3 +97,22 @@
 - Never replace failed local JSON with an empty menu without owner consent.
 - Never commit release credentials.
 - Keep the app entirely local-first and add useful comments to new code.
+
+
+## V1.2.0 offline owner-issued account implementation (PR #3)
+- [x] App-private `accounts.json` registry, separate from public menu JSON.
+- [x] Personal access-code file import; only salted SHA-256 digests are persisted.
+- [x] One-time code claim per installation, mobile identifier and shop-name registration.
+- [x] First-run activation gate and personal code import UI.
+- [x] Local Python generator creates 100 separate personal code files, a distribution ZIP and private issuer CSV ledger.
+- [x] Private account recovery JSON export from the owner workspace.
+- [x] Account recovery JSON restore from the activation screen on a replacement phone.
+- [x] Existing installs with a pre-existing menu file are grandfathered to avoid locking out current owners.
+- [x] Added repository tests for code import, duplicate claim, duplicate mobile, recovery, invalid backup and legacy migration.
+- [x] Updated README and architecture contract to reflect local offline accounts.
+- [ ] CI formatting/analyzer/tests/APK build and generator validation are running in PR #3.
+- [ ] Publish a clearly labeled debug-signed physical-testing APK and update the website download target after CI passes.
+- [ ] Physical Android testing is the only planned manual QA step after automated validation and test APK publication.
+- Cross-device single-use is controlled by the issuer's private CSV ledger; offline app instances cannot coordinate. Phone numbers are identifiers, not verified identity.
+- Production signing is intentionally not configured for the physical-testing APK. Do not describe the test APK as production-signed or Play Store-ready.
+

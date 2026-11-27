@@ -12,13 +12,15 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../data/menu_document.dart';
 import '../../data/menu_repository.dart';
+import '../../data/offline_account_repository.dart';
 import '../../design/menu_template_catalog.dart';
 import '../../services/static_package_builder.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required this.repository});
+  const HomeScreen({super.key, required this.repository, this.accountRepository});
 
   final MenuRepository repository;
+  final OfflineAccountRepository? accountRepository;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -77,6 +79,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: _showShopDialog,
                   icon: const Icon(Icons.storefront_outlined),
                 ),
+                if (widget.accountRepository != null)
+                  IconButton(
+                    tooltip: 'Export account recovery backup',
+                    onPressed: _exportAccountBackup,
+                    icon: const Icon(Icons.shield_outlined),
+                  ),
                 PopupMenuButton<String>(
                   tooltip: 'Backup options',
                   onSelected: (value) {
@@ -1150,6 +1158,26 @@ class _HomeScreenState extends State<HomeScreen> {
     name.dispose();
     description.dispose();
     price.dispose();
+  }
+
+  Future<void> _exportAccountBackup() async {
+    final accounts = widget.accountRepository;
+    if (accounts == null) {
+      return;
+    }
+    try {
+      // Keep account backup separate from the public menu ZIP and customer export.
+      final file = File('${Directory.systemTemp.path}/menucard-account-recovery.json');
+      await file.writeAsString(accounts.exportRecoveryJson(), flush: true);
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile(file.path)],
+        subject: 'MenuCard account recovery backup',
+        text: 'Private account recovery file. Keep it secure and do not share it publicly.',
+      ));
+      _message('Private account recovery backup prepared.');
+    } catch (error) {
+      _message(_cleanError(error));
+    }
   }
 
   Future<void> _exportBackup() async {
