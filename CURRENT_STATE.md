@@ -1,6 +1,6 @@
 # Current State
 
-**Updated:** 2026-11-27
+**Updated:** 2026-11-28
 
 ## Repository
 - https://github.com/chandravadiyaDeep/menucard
@@ -97,3 +97,16 @@
 - Never replace failed local JSON with an empty menu without owner consent.
 - Never commit release credentials.
 - Keep the app entirely local-first and add useful comments to new code.
+
+
+## V1.2.0 offline owner-issued account implementation (feature branch)
+- [x] Added app-private `accounts.json` account registry, separate from public menu JSON.
+- [x] Added owner-issued code batch import; raw access codes are converted to salted SHA-256 digests before local persistence.
+- [x] Added one-time code claim per installation, mobile identifier and shop-name registration.
+- [x] Added first-run account activation gate to the Android app startup flow.
+- [x] Added local owner code generator at `tools/generate_owner_codes.py` (100 random codes, private JSON and CSV ledger).
+- [x] Documented issuer ledger and offline uniqueness boundaries in `docs/OFFLINE_ACCOUNTS.md`.
+- [ ] Account recovery export/restore UI is not yet connected; repository serialization methods exist, but owner must retain the private account file until UI is completed.
+- [ ] No cross-device single-use enforcement or mobile-number verification is possible offline. Issuer master ledger is authoritative.
+- [ ] Automated Flutter tests, Android build, physical device QA and release publication are pending.
+- [ ] Production signing remains a separate release requirement.
