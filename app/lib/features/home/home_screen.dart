@@ -248,86 +248,61 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
   Future<void> _startGuidedSetup() async {
-    final shopName = TextEditingController();
-    final phone = TextEditingController();
-    var language = _document.defaultLocale;
-    var shopType = 'cafe';
     final types = <String, Map<String, List<String>>>{
-      'cafe': {'en': ['Coffee & Tea', 'Snacks', 'Desserts'], 'gu': ['ચા અને કોફી', 'નાસ્તો', 'મીઠાઈ'], 'hi': ['चाय और कॉफी', 'नाश्ता', 'मिठाई']},
-      'restaurant': {'en': ['Starters', 'Main Course', 'Breads', 'Drinks'], 'gu': ['સ્ટાર્ટર', 'મુખ્ય ભોજન', 'રોટલી', 'પીણાં'], 'hi': ['स्टार्टर', 'मुख्य भोजन', 'रोटी', 'पेय']},
-      'bakery': {'en': ['Cakes', 'Pastries', 'Breads', 'Cookies'], 'gu': ['કેક', 'પેસ્ટ્રી', 'બ્રેડ', 'કૂકીઝ'], 'hi': ['केक', 'पेस्ट्री', 'ब्रेड', 'कुकीज़']},
-      'tea': {'en': ['Tea & Coffee', 'Quick Bites', 'Cold Drinks'], 'gu': ['ચા અને કોફી', 'ઝટપટ નાસ્તો', 'ઠંડાં પીણાં'], 'hi': ['चाय और कॉफी', 'झटपट नाश्ता', 'ठंडे पेय']},
-      'other': {'en': ['Popular', 'Food', 'Drinks'], 'gu': ['લોકપ્રિય', 'ખાવાનું', 'પીણાં'], 'hi': ['लोकप्रिय', 'खाना', 'पेय']},
+      'cafe': {
+        'en': ['Coffee & Tea', 'Snacks', 'Desserts'],
+        'gu': ['ચા અને કોફી', 'નાસ્તો', 'મીઠાઈ'],
+        'hi': ['चाय और कॉफी', 'नाश्ता', 'मिठाई'],
+      },
+      'restaurant': {
+        'en': ['Starters', 'Main Course', 'Breads', 'Drinks'],
+        'gu': ['સ્ટાર્ટર', 'મુખ્ય ભોજન', 'રોટલી', 'પીણાં'],
+        'hi': ['स्टार्टर', 'मुख्य भोजन', 'रोटी', 'पेय'],
+      },
+      'bakery': {
+        'en': ['Cakes', 'Pastries', 'Breads', 'Cookies'],
+        'gu': ['કેક', 'પેસ્ટ્રી', 'બ્રેડ', 'કૂકીઝ'],
+        'hi': ['केक', 'पेस्ट्री', 'ब्रेड', 'कुकीज़'],
+      },
+      'tea': {
+        'en': ['Tea & Coffee', 'Quick Bites', 'Cold Drinks'],
+        'gu': ['ચા અને કોફી', 'ઝટપટ નાસ્તો', 'ઠંડાં પીણાં'],
+        'hi': ['चाय और कॉफी', 'झटपट नाश्ता', 'ठंडे पेय'],
+      },
+      'other': {
+        'en': ['Popular', 'Food', 'Drinks'],
+        'gu': ['લોકપ્રિય', 'ખાવાનું', 'પીણાં'],
+        'hi': ['लोकप्रिय', 'खाना', 'पेय'],
+      },
     };
-    final result = await showDialog<bool>(
+
+    final setup = await showDialog<_GuidedSetupDraft>(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => StatefulBuilder(builder: (context, setDialogState) => AlertDialog(
-        title: const Text('Let’s set up your shop'),
-        content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('1. What should your customers call your shop?', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 8),
-          TextField(controller: shopName, autofocus: true, textCapitalization: TextCapitalization.words, decoration: const InputDecoration(hintText: 'e.g. Nukkad Cafe')),
-          const SizedBox(height: 16),
-          const Text('2. Which language should your menu use?', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 8),
-          DropdownButtonFormField<String>(
-            initialValue: language,
-            items: const [
-              DropdownMenuItem(value: 'en', child: Text('English')),
-              DropdownMenuItem(value: 'gu', child: Text('ગુજરાતી')),
-              DropdownMenuItem(value: 'hi', child: Text('हिन्दी')),
-            ],
-            onChanged: (value) => setDialogState(() => language = value ?? 'en'),
-          ),
-          const SizedBox(height: 16),
-          const Text('3. What kind of shop do you run?', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 8),
-          DropdownButtonFormField<String>(
-            initialValue: shopType,
-            items: const [
-              DropdownMenuItem(value: 'cafe', child: Text('Cafe / Snacks')),
-              DropdownMenuItem(value: 'restaurant', child: Text('Restaurant')),
-              DropdownMenuItem(value: 'bakery', child: Text('Bakery')),
-              DropdownMenuItem(value: 'tea', child: Text('Tea stall')),
-              DropdownMenuItem(value: 'other', child: Text('Other shop')),
-            ],
-            onChanged: (value) => setDialogState(() => shopType = value ?? 'other'),
-          ),
-          const SizedBox(height: 8),
-          TextField(controller: phone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'Phone (optional)')),
-          const SizedBox(height: 8),
-          const Text('We’ll create starter categories. You can rename or delete them anytime.', style: TextStyle(fontSize: 10, color: Color(0xFF78827B))),
-        ])),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Not now')),
-          FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('Create my menu')),
-        ],
-      )),
+      builder: (_) => _GuidedSetupDialog(initialLanguage: _document.defaultLocale),
     );
-    if (result == true) {
-      try {
-        await widget.repository.saveShop(
-          name: shopName.text,
-          description: '',
-          translationLocale: language,
-          defaultLocale: language,
-          phone: phone.text,
-        );
-        for (final category in types[shopType]![language]!) {
-          await widget.repository.saveCategory(title: category, locale: language);
-        }
-        if (!mounted) {
-          return;
-        }
-        setState(() { _locale = language; _tab = 1; });
-        _message('Your shop is ready. Add your first dishes and prices!');
-      } catch (error) {
-        _message(_cleanError(error));
+
+    if (setup == null) return;
+    try {
+      await widget.repository.saveShop(
+        name: setup.shopName,
+        description: '',
+        translationLocale: setup.language,
+        defaultLocale: setup.language,
+        phone: setup.phone,
+      );
+      for (final category in types[setup.shopType]![setup.language]!) {
+        await widget.repository.saveCategory(title: category, locale: setup.language);
       }
+      if (!mounted) return;
+      setState(() {
+        _locale = setup.language;
+        _tab = 1;
+      });
+      _message('Your shop is ready. Add your first dishes and prices!');
+    } catch (error) {
+      _message(_cleanError(error));
     }
-    shopName.dispose();
-    phone.dispose();
   }
 
   // Guide first-time owners through profile, menu entry and design selection.
@@ -1298,6 +1273,139 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!mounted) { return; }
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text), behavior: SnackBarBehavior.floating));
   }
+}
+
+class _GuidedSetupDraft {
+  const _GuidedSetupDraft({
+    required this.shopName,
+    required this.phone,
+    required this.language,
+    required this.shopType,
+  });
+
+  final String shopName;
+  final String phone;
+  final String language;
+  final String shopType;
+}
+
+/// Owns its text controllers so they live exactly as long as the dialog route.
+class _GuidedSetupDialog extends StatefulWidget {
+  const _GuidedSetupDialog({required this.initialLanguage});
+
+  final String initialLanguage;
+
+  @override
+  State<_GuidedSetupDialog> createState() => _GuidedSetupDialogState();
+}
+
+class _GuidedSetupDialogState extends State<_GuidedSetupDialog> {
+  final _shopNameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  late String _language = widget.initialLanguage;
+  String _shopType = 'cafe';
+
+  @override
+  void dispose() {
+    _shopNameController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+        title: const Text('Let’s set up your shop'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '1. What should your customers call your shop?',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _shopNameController,
+                autofocus: true,
+                textCapitalization: TextCapitalization.words,
+                decoration: const InputDecoration(hintText: 'e.g. Nukkad Cafe'),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                '2. Which language should your menu use?',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                initialValue: _language,
+                items: const [
+                  DropdownMenuItem(value: 'en', child: Text('English')),
+                  DropdownMenuItem(value: 'gu', child: Text('ગુજરાતી')),
+                  DropdownMenuItem(value: 'hi', child: Text('हिन्दी')),
+                ],
+                onChanged: (value) => setState(() => _language = value ?? 'en'),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                '3. What kind of shop do you run?',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                initialValue: _shopType,
+                items: const [
+                  DropdownMenuItem(value: 'cafe', child: Text('Cafe / Snacks')),
+                  DropdownMenuItem(value: 'restaurant', child: Text('Restaurant')),
+                  DropdownMenuItem(value: 'bakery', child: Text('Bakery')),
+                  DropdownMenuItem(value: 'tea', child: Text('Tea stall')),
+                  DropdownMenuItem(value: 'other', child: Text('Other shop')),
+                ],
+                onChanged: (value) => setState(() => _shopType = value ?? 'other'),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(labelText: 'Phone (optional)'),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'We’ll create starter categories. You can rename or delete them anytime.',
+                style: TextStyle(fontSize: 10, color: Color(0xFF78827B)),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Not now'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final shopName = _shopNameController.text.trim();
+              if (shopName.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Enter your shop name to continue.')),
+                );
+                return;
+              }
+              Navigator.pop(
+                context,
+                _GuidedSetupDraft(
+                  shopName: shopName,
+                  phone: _phoneController.text.trim(),
+                  language: _language,
+                  shopType: _shopType,
+                ),
+              );
+            },
+            child: const Text('Create my menu'),
+          ),
+        ],
+      );
+
 }
 
 class _ItemDraft {
