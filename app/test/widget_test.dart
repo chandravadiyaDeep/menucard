@@ -112,9 +112,10 @@ void main() {
           widget.decoration?.hintText == 'Search dishes, descriptions or categories',
     );
     expect(searchField, findsOneWidget);
+    final menuScrollable = find.ancestor(of: searchField, matching: find.byType(Scrollable));
     await tester.enterText(searchField, 'chai');
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(find.text('Masala Chai'), 250);
+    await tester.scrollUntilVisible(find.text('Masala Chai'), 250, scrollable: menuScrollable);
 
     expect(find.text('Masala Chai'), findsOneWidget);
     expect(find.text('Samosa'), findsNothing);
@@ -123,13 +124,13 @@ void main() {
     // Empty results expose one-tap filter reset instead of trapping the owner.
     await tester.enterText(searchField, 'not-a-real-dish');
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(find.text('Clear all filters'), 250);
+    await tester.scrollUntilVisible(find.text('Clear all filters'), 250, scrollable: menuScrollable);
     expect(find.text('Clear all filters'), findsOneWidget);
     await tester.tap(find.text('Clear all filters'));
     await tester.pumpAndSettle();
 
     // Return to the filter controls after the clear action rebuilds the longer menu.
-    await tester.scrollUntilVisible(searchField, -250);
+    await tester.scrollUntilVisible(searchField, -250, scrollable: menuScrollable);
 
     // Confirm the search text and availability/category chips all reset.
     expect(tester.widget<TextField>(searchField).controller!.text, isEmpty);
@@ -141,7 +142,7 @@ void main() {
     // Availability filters are reachable and narrow results without deleting data.
     await tester.tap(pausedChip);
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(find.text('Samosa'), 250);
+    await tester.scrollUntilVisible(find.text('Samosa'), 250, scrollable: menuScrollable);
     expect(find.text('Samosa'), findsOneWidget);
     expect(find.text('Masala Chai'), findsNothing);
 
@@ -179,12 +180,17 @@ void main() {
 
     await tester.pumpWidget(MenuCardApp(repository: repository));
     await tester.pump(const Duration(milliseconds: 100));
-    await tester.scrollUntilVisible(find.byKey(const ValueKey('home-customer-preview')), 250);
-    expect(find.byKey(const ValueKey('home-customer-preview')), findsOneWidget);
+    final homePreview = find.byKey(const ValueKey('home-customer-preview'));
+    final homeScrollable = find.ancestor(of: homePreview, matching: find.byType(Scrollable));
+    await tester.scrollUntilVisible(homePreview, 250, scrollable: homeScrollable);
+    expect(homePreview, findsOneWidget);
 
     await tester.tap(find.text('My menu'));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('menu-customer-preview')), findsOneWidget);
+    final menuPreview = find.byKey(const ValueKey('menu-customer-preview'));
+    final menuPreviewScrollable = find.ancestor(of: menuPreview, matching: find.byType(Scrollable));
+    await tester.scrollUntilVisible(menuPreview, 250, scrollable: menuPreviewScrollable);
+    expect(menuPreview, findsOneWidget);
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.runAsync(() async {
