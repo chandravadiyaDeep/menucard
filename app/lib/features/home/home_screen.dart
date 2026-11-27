@@ -191,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Row(
           children: [
             const Expanded(child: Text('Quick actions', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900))),
-            Text('V1.1', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 10, fontWeight: FontWeight.w900)),
+            Text('V1.1.1', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 10, fontWeight: FontWeight.w900)),
           ],
         ),
         const SizedBox(height: 12),
