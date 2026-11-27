@@ -9,16 +9,17 @@ Static hosting is a file origin only: it serves HTML, CSS, JavaScript, JSON and 
 
 ### Android owner app
 All owner-side application logic runs on-device:
-1. Presentation: Flutter screens, navigation, localization and view state.
+1. Presentation: guided shop setup, Flutter screens, navigation, localization and view state.
 2. Domain: validation, price conversion, language fallback, category/item rules and revision management.
-3. Data: local JSON repository, atomic file persistence, image files and backup import/export.
-4. Publishing: package builder, static asset copier, ZIP export, HTTPS URL validation and QR generation.
-5. Platform adapters: Android file picker, share sheet and storage APIs.
+3. Design system: 120 ready-made combinations from 10 layout families and 12 curated themes; templates are data-driven and separate from shop content.
+4. Data: local JSON repository, atomic file persistence, image files and backup import/export.
+5. Rendering/publishing: bind the current shop/menu JSON to the selected template, preview it offline, package static assets, export ZIP, validate HTTPS URL and generate QR.
+6. Platform adapters: Android file picker, share sheet and storage APIs.
 
 The UI must call repositories/use cases; it must not write JSON files directly.
 
 ### Static customer menu
-The exported package contains a static index.html, CSS/JavaScript assets, menu.json and public images. Browser JavaScript parses the JSON and renders the customer menu. The static host only returns files.
+The exported package contains a static index.html, CSS/JavaScript assets, menu.json and public images. Browser JavaScript parses the JSON and renders the customer menu. The static host only returns files. The browser-side renderer reads `template_id` from menu.json and binds the shop's current text, dishes and prices into the selected layout.
 
 ## On-device data storage
 - Canonical file: app-private shop-menu.json.
@@ -26,13 +27,21 @@ The exported package contains a static index.html, CSS/JavaScript assets, menu.j
 - Local backup: versioned JSON/ZIP export, kept separate from the public publish package.
 - Use stable UUIDs for shop, category and item IDs.
 - Use integer paise (price_minor) to avoid floating-point currency errors.
-- Include schema_version, revision, updated_at, shop, languages and categories with nested items.
+- Include schema_version, revision, updated_at, shop, languages, `template_id` and categories with nested items.
+- Keep `template_selected` as local onboarding state only; never expose it in the public JSON.
 - Persist safely: serialize and validate → write a temporary sibling file → flush/close → retain previous valid file → rename temporary file into place.
 - On startup, validate the file; if the primary is invalid, offer recovery from the last-known-good copy rather than silently resetting it.
 - No SQLite/Drift or other database is part of the approved V1 persistence layer.
 
 ## JSON schema and example
 See [sample-menu.json](../examples/sample-menu.json). The schema is versioned. Unknown future schema versions must be rejected with a clear upgrade message; compatible additive fields may be ignored only when explicitly documented.
+
+## Template rendering contract
+- Menu content is the single source of truth. Template selection must never copy content into template-specific fields or create per-template menu records.
+- `template_id` uses a stable `layout-theme` ID, such as `editorial-terracotta`.
+- Flutter's template catalog provides the owner gallery and visual previews. The exported customer viewer uses the same ID to apply the matching CSS layout and theme.
+- The browser renderer uses an allowlist for layout and theme identifiers and renders owner-provided text through `textContent`, never executable HTML.
+- Changing a menu field and changing a template are independent operations. Existing data remains intact when the owner switches designs.
 
 ## Manual publishing contract
 
