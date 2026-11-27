@@ -437,9 +437,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final accent = Color(template.accentColor);
     final textColor = Color(template.textColor);
     final shopName = _shopName(document);
-    final sampleItem = document.categories
-        .expand((category) => category.items)
-        .firstOrNull;
+    final menuItems = document.categories.expand((category) => category.items).toList();
+    final sampleItem = menuItems.isEmpty ? null : menuItems.first;
     final sampleName = sampleItem?.nameFor(_locale, document.defaultLocale) ?? 'Your best-selling dish';
     final samplePrice = sampleItem == null ? '₹120' : _price(sampleItem.priceMinor);
 
