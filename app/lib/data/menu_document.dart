@@ -9,6 +9,7 @@ class MenuDocument {
     required this.shop,
     required this.categories,
     this.templateId = 'classic-forest',
+    this.templateSelected = false,
     this.publishedUrl,
     this.publishedRevision = 0,
     this.publishedAt,
@@ -26,6 +27,8 @@ class MenuDocument {
   List<MenuCategory> categories;
   // Selected ready-made presentation; menu content remains independent of design.
   String templateId;
+  // Tracks whether the owner explicitly picked a design during setup.
+  bool templateSelected;
 
   // Local-only publishing state. This is deliberately excluded from public JSON.
   String? publishedUrl;
@@ -76,6 +79,7 @@ class MenuDocument {
           .map((value) => MenuCategory.fromJson(_asMap(value, 'category')))
           .toList(),
       templateId: json['template_id']?.toString() ?? 'classic-forest',
+      templateSelected: json['template_selected'] == true,
       publishedUrl: publish['url']?.toString(),
       publishedRevision: _nonNegativeInt(publish['revision']),
       publishedAt: DateTime.tryParse(publish['at']?.toString() ?? ''),
@@ -91,6 +95,7 @@ class MenuDocument {
   Map<String, dynamic> toStorageJson() => {
         ...toPublicJson(),
         'categories': categories.map((category) => category.toStorageJson()).toList(),
+        'template_selected': templateSelected,
         'local_publish': {
           'url': publishedUrl,
           'revision': publishedRevision,
