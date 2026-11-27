@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:material_ui/material_ui.dart';
@@ -73,7 +74,7 @@ class _QrMenuScreenState extends State<QrMenuScreen> {
     }
   }
 
-  Future<List<int>> _qrPngBytes(String url) async {
+  Future<Uint8List> _qrPngBytes(String url) async {
     // Render a high-resolution PNG so printed QR codes remain sharp.
     final data = await QrPainter(
       data: url,
