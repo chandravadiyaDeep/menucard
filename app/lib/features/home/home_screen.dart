@@ -86,19 +86,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemBuilder: (context) => const [
                     PopupMenuItem(
                       value: 'backup',
-                      child: ListTile(
-                        leading: Icon(Icons.backup_outlined),
-                        title: Text('Export private backup'),
-                        contentPadding: EdgeInsets.zero,
-                      ),
+                      child: Row(children: [
+                        Icon(Icons.backup_outlined, size: 19),
+                        SizedBox(width: 10),
+                        Text('Export private backup'),
+                      ]),
                     ),
                     PopupMenuItem(
                       value: 'restore',
-                      child: ListTile(
-                        leading: Icon(Icons.restore_rounded),
-                        title: Text('Restore from backup'),
-                        contentPadding: EdgeInsets.zero,
-                      ),
+                      child: Row(children: [
+                        Icon(Icons.restore_rounded, size: 19),
+                        SizedBox(width: 10),
+                        Text('Restore from backup'),
+                      ]),
                     ),
                   ],
                 ),
