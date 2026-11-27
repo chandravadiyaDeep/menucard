@@ -72,11 +72,11 @@ class _CustomerMenuPreviewScreenState extends State<CustomerMenuPreviewScreen> {
           .replaceAll('<', r'\u003C')
           .replaceAll('>', r'\u003E');
       final customerHtml = html
-          .replace(
+          .replaceAll(
             '<link rel="stylesheet" href="assets/menu.css">',
             '<style>\n$css\n</style>',
           )
-          .replace(
+          .replaceAll(
             '<script src="assets/menu.js" defer></script>',
             '<script>window.__MENUCARD_PREVIEW__ = $menuJson;</script>\n<script>\n$js\n</script>',
           );
