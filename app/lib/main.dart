@@ -1,17 +1,17 @@
 import 'package:material_ui/material_ui.dart';
-
 import 'app.dart';
 import 'data/menu_repository.dart';
+import 'data/offline_account_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   try {
-    // Load the durable local menu before exposing the owner workspace.
+    // Open private menu and account JSON repositories before showing the workspace.
     final repository = await MenuRepository.open();
-    runApp(MenuCardApp(repository: repository));
+    final accounts = await OfflineAccountRepository.open();
+    runApp(MenuCardApp(repository: repository, accountRepository: accounts));
   } catch (error) {
-    // Never replace an unreadable menu with an empty document without consent.
+    // Preserve unreadable local data rather than silently replacing it.
     runApp(MenuCardStartupError(error: error));
   }
 }
