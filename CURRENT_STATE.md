@@ -36,7 +36,7 @@
 - [x] Dashboard widget smoke test.
 
 ## Template-first implementation verification
-- [ ] Template gallery and customer renderer have not yet passed CI after this change.
+- [x] Template gallery, template persistence, 120-design catalog and static customer renderer passed Flutter formatting, static analysis and automated tests in Android workflow run #35.
 - [ ] Physical device visual QA for the 120-template gallery and customer menu is pending.
 
 ## CI verification
@@ -45,7 +45,7 @@
 - [x] Complete Flutter test suite passed on the latest build attempt.
 - [x] Android platform project generation and dependency installation passed.
 - [ ] Latest release-mode APK build is still running in GitHub Actions.
-- Latest run: https://github.com/chandravadiyaDeep/menucard/actions/runs/45891993073
+- Latest run: https://github.com/chandravadiyaDeep/menucard/actions/runs/45939079658
 - CI now uses Java 21 because the previous Java 17 run crashed inside Android Lint.
 - No APK artifact is claimed until the build and artifact-upload steps complete.
 
@@ -57,10 +57,9 @@
 - See app/RELEASE.md for the four required signing secrets and secure release process.
 
 ## Remaining quality gates
-1. Run the new template-first changes through Flutter format, analyzer, tests and APK build; fix any regressions.
-2. Confirm the APK artifact and install it on Android devices.
-2. Install and test on Android devices: fresh install, persistence after force-close, menu CRUD, image import/export, backup/restore, share sheet, website ZIP and QR.
-3. Upload the generated package to a suitable static host, verify replacement/cache behavior and scan the QR.
+1. Confirm the release-mode APK build and retrieve its Actions artifact.
+2. Install and test on physical Android devices: fresh install, persistence after force-close, menu CRUD, template gallery, customer preview/export, image import/export, backup/restore, share sheet and QR.
+3. Upload a generated customer package to a suitable static host, verify replacement/cache behavior and scan the QR.
 4. Configure persistent signing secrets before creating a production release tag.
 
 ## Guardrails
