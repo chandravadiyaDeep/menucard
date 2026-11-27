@@ -245,9 +245,11 @@ void main() {
 
     final publicJson = repository.document.toPublicJson();
     expect(publicJson['template_id'], 'editorial-terracotta');
+    expect(publicJson.containsKey('template_selected'), isFalse);
 
     final reloaded = await MenuRepository.openAt(file);
     expect(reloaded.document.templateId, 'editorial-terracotta');
+    expect(reloaded.document.templateSelected, isTrue);
     reloaded.dispose();
   });
 
