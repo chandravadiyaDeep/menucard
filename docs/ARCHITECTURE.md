@@ -1,7 +1,7 @@
 # Architecture — Local JSON and Manual Static Publishing
 
 ## Locked decision
-MenuCard V1 uses on-device JSON as its single source of truth. Publishing is manual and produces a static website bundle. There is no backend, API server, Worker, database server, automatic sync, remote write endpoint or account service.
+MenuCard uses on-device JSON as its source of truth for menu and account records. Publishing is manual and produces a static website bundle. There is no backend, API server, Worker, database server, automatic sync or remote write endpoint. Owner activation uses individual issuer-generated offline codes; see [Offline Accounts](OFFLINE_ACCOUNTS.md).
 
 Static hosting is a file origin only: it serves HTML, CSS, JavaScript, JSON and images uploaded by the shop owner. It does not execute MenuCard business logic.
 
@@ -25,6 +25,7 @@ The exported package contains a static index.html, CSS/JavaScript assets, menu.j
 - Canonical file: app-private shop-menu.json.
 - Optional public images: app-private image directory, referenced by stable relative asset IDs/paths.
 - Local backup: versioned JSON/ZIP export, kept separate from the public publish package.
+- Owner account registry: app-private `accounts.json`, kept separate from menu JSON and public publishing. Issued codes are stored as salted digests; recovery backup is a separate private JSON file.
 - Use stable UUIDs for shop, category and item IDs.
 - Use integer paise (price_minor) to avoid floating-point currency errors.
 - Include schema_version, revision, updated_at, shop, languages, `template_id` and categories with nested items.
@@ -86,7 +87,9 @@ Never infer upload success from file export. If the owner edits after exporting,
 - Never export private local file paths, device identifiers, app settings, backup history, tokens or credentials.
 - Anything published is public and downloadable.
 - HTTPS is required for the saved customer URL.
-- No owner authentication is implemented in V1. The hosting provider's dashboard account and its own security controls are the owner's responsibility.
+- Owner activation is local to this device and uses a one-time code claim. Phone numbers are identifiers only; no OTP or phone ownership verification is performed offline.
+- Cross-device code uniqueness is maintained by the issuer's private ledger, not by the app. Existing installs are grandfathered during migration.
+- The hosting provider's dashboard account and its own security controls are the owner's responsibility.
 
 ## Migration from current prototype
 The current Flutter scaffold uses Drift/SQLite. That implementation does not match this locked architecture. Before adding more menu features, replace Drift tables/repository with a JSON-backed repository and update tests/dependencies. Do not keep SQLite as a hidden secondary source of truth.
