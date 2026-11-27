@@ -1,4 +1,7 @@
 import 'dart:io';
+import 'package:flutter/services.dart';
+
+import 'customer_menu_preview_screen.dart';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:material_ui/material_ui.dart';
@@ -27,6 +30,10 @@ class _HomeScreenState extends State<HomeScreen> {
   late final TextEditingController _urlController;
   bool _isExporting = false;
   String _templateLayoutFilter = 'All';
+  String _menuSearch = '';
+  String _availabilityFilter = 'all';
+  String _categoryFilter = 'all';
+  late final TextEditingController _searchController;
 
   MenuDocument get _document => widget.repository.document;
 
@@ -35,11 +42,13 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _locale = _document.defaultLocale;
     _urlController = TextEditingController(text: _document.publishedUrl ?? '');
+    _searchController = TextEditingController();
   }
 
   @override
   void dispose() {
     _urlController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -111,6 +120,10 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 8),
         Text('Your menu,\none simple place.', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, height: 1.05, letterSpacing: -1.1)),
         _setupProgressCard(document, itemCount),
+        if (document.shop.name.values.every((value) => value.trim().isEmpty)) ...[
+          const SizedBox(height: 14),
+          _firstRunCard(),
+        ],
         const SizedBox(height: 18),
         Container(
           padding: const EdgeInsets.all(20),
@@ -178,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Row(
           children: [
             const Expanded(child: Text('Quick actions', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900))),
-            Text('V1.0', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 10, fontWeight: FontWeight.w900)),
+            Text('V1.1.1', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 10, fontWeight: FontWeight.w900)),
           ],
         ),
         const SizedBox(height: 12),
@@ -213,6 +226,106 @@ class _HomeScreenState extends State<HomeScreen> {
         _publishStatus(document),
       ],
     );
+  }
+
+  // A short setup interview chooses the owner's language and shop starter categories.
+  Widget _firstRunCard() => Container(
+        padding: const EdgeInsets.all(17),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE8EEE7),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(children: [
+          const Icon(Icons.auto_awesome_rounded, color: Color(0xFF285C47), size: 25),
+          const SizedBox(width: 12),
+          const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('New to MenuCard?', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
+            SizedBox(height: 3),
+            Text('Answer 3 quick questions and get a menu starter made for your shop.', style: TextStyle(fontSize: 11, height: 1.4, color: Color(0xFF617166))),
+          ])),
+          TextButton(onPressed: _startGuidedSetup, child: const Text('Start')),
+        ]),
+      );
+
+  Future<void> _startGuidedSetup() async {
+    final shopName = TextEditingController();
+    final phone = TextEditingController();
+    var language = _document.defaultLocale;
+    var shopType = 'cafe';
+    final types = <String, Map<String, List<String>>>{
+      'cafe': {'en': ['Coffee & Tea', 'Snacks', 'Desserts'], 'gu': ['ચા અને કોફી', 'નાસ્તો', 'મીઠાઈ'], 'hi': ['चाय और कॉफी', 'नाश्ता', 'मिठाई']},
+      'restaurant': {'en': ['Starters', 'Main Course', 'Breads', 'Drinks'], 'gu': ['સ્ટાર્ટર', 'મુખ્ય ભોજન', 'રોટલી', 'પીણાં'], 'hi': ['स्टार्टर', 'मुख्य भोजन', 'रोटी', 'पेय']},
+      'bakery': {'en': ['Cakes', 'Pastries', 'Breads', 'Cookies'], 'gu': ['કેક', 'પેસ્ટ્રી', 'બ્રેડ', 'કૂકીઝ'], 'hi': ['केक', 'पेस्ट्री', 'ब्रेड', 'कुकीज़']},
+      'tea': {'en': ['Tea & Coffee', 'Quick Bites', 'Cold Drinks'], 'gu': ['ચા અને કોફી', 'ઝટપટ નાસ્તો', 'ઠંડાં પીણાં'], 'hi': ['चाय और कॉफी', 'झटपट नाश्ता', 'ठंडे पेय']},
+      'other': {'en': ['Popular', 'Food', 'Drinks'], 'gu': ['લોકપ્રિય', 'ખાવાનું', 'પીણાં'], 'hi': ['लोकप्रिय', 'खाना', 'पेय']},
+    };
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(builder: (context, setDialogState) => AlertDialog(
+        title: const Text('Let’s set up your shop'),
+        content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('1. What should your customers call your shop?', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 8),
+          TextField(controller: shopName, autofocus: true, textCapitalization: TextCapitalization.words, decoration: const InputDecoration(hintText: 'e.g. Nukkad Cafe')),
+          const SizedBox(height: 16),
+          const Text('2. Which language should your menu use?', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            initialValue: language,
+            items: const [
+              DropdownMenuItem(value: 'en', child: Text('English')),
+              DropdownMenuItem(value: 'gu', child: Text('ગુજરાતી')),
+              DropdownMenuItem(value: 'hi', child: Text('हिन्दी')),
+            ],
+            onChanged: (value) => setDialogState(() => language = value ?? 'en'),
+          ),
+          const SizedBox(height: 16),
+          const Text('3. What kind of shop do you run?', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            initialValue: shopType,
+            items: const [
+              DropdownMenuItem(value: 'cafe', child: Text('Cafe / Snacks')),
+              DropdownMenuItem(value: 'restaurant', child: Text('Restaurant')),
+              DropdownMenuItem(value: 'bakery', child: Text('Bakery')),
+              DropdownMenuItem(value: 'tea', child: Text('Tea stall')),
+              DropdownMenuItem(value: 'other', child: Text('Other shop')),
+            ],
+            onChanged: (value) => setDialogState(() => shopType = value ?? 'other'),
+          ),
+          const SizedBox(height: 8),
+          TextField(controller: phone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'Phone (optional)')),
+          const SizedBox(height: 8),
+          const Text('We’ll create starter categories. You can rename or delete them anytime.', style: TextStyle(fontSize: 10, color: Color(0xFF78827B))),
+        ])),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Not now')),
+          FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('Create my menu')),
+        ],
+      )),
+    );
+    if (result == true) {
+      try {
+        await widget.repository.saveShop(
+          name: shopName.text,
+          description: '',
+          translationLocale: language,
+          defaultLocale: language,
+          phone: phone.text,
+        );
+        for (final category in types[shopType]![language]!) {
+          await widget.repository.saveCategory(title: category, locale: language);
+        }
+        if (!mounted) return;
+        setState(() { _locale = language; _tab = 1; });
+        _message('Your shop is ready. Add your first dishes and prices!');
+      } catch (error) {
+        _message(_cleanError(error));
+      }
+    }
+    shopName.dispose();
+    phone.dispose();
   }
 
   // Guide first-time owners through profile, menu entry and design selection.
@@ -352,6 +465,38 @@ class _HomeScreenState extends State<HomeScreen> {
             onChanged: (value) => setState(() => _locale = value ?? 'en'),
           ),
         ]),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _searchController,
+          onChanged: (value) => setState(() => _menuSearch = value.trim().toLowerCase()),
+          decoration: InputDecoration(
+            hintText: 'Search dishes, descriptions or categories',
+            prefixIcon: const Icon(Icons.search_rounded),
+            suffixIcon: _menuSearch.isEmpty ? null : IconButton(
+              tooltip: 'Clear search',
+              onPressed: () { _searchController.clear(); setState(() => _menuSearch = ''); },
+              icon: const Icon(Icons.close_rounded),
+            ),
+          ),
+        ),
+        const SizedBox(height: 9),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(children: [
+            _menuFilterChip('All', 'all', _categoryFilter == 'all', () => setState(() => _categoryFilter = 'all')),
+            for (final category in categories)
+              _menuFilterChip(category.titleFor(_locale, document.defaultLocale), category.id, _categoryFilter == category.id, () => setState(() => _categoryFilter = category.id)),
+          ]),
+        ),
+        const SizedBox(height: 5),
+        Row(children: [
+          _menuFilterChip('All items', 'all', _availabilityFilter == 'all', () => setState(() => _availabilityFilter = 'all')),
+          const SizedBox(width: 6),
+          _menuFilterChip('Available', 'available', _availabilityFilter == 'available', () => setState(() => _availabilityFilter = 'available')),
+          const SizedBox(width: 6),
+          _menuFilterChip('Paused', 'unavailable', _availabilityFilter == 'unavailable', () => setState(() => _availabilityFilter = 'unavailable')),
+        ]),
+        const SizedBox(height: 10),
         Row(children: [
           Expanded(child: OutlinedButton.icon(onPressed: _showCategoryDialog, icon: const Icon(Icons.create_new_folder_outlined), label: const Text('Category'))),
           const SizedBox(width: 10),
@@ -360,13 +505,43 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 16),
         if (categories.isEmpty)
           _emptyCard(Icons.add_business_outlined, 'Start with a category', 'Create groups such as Tea & Coffee, Snacks or Desserts.')
-        else
-          ...categories.map((category) => _categoryEditorCard(category, document)),
+        else ...[
+          for (final category in categories.where((entry) => _categoryFilter == 'all' || entry.id == _categoryFilter))
+            if (_filteredItems(category, document).isNotEmpty || (_menuSearch.isEmpty && _availabilityFilter == 'all'))
+              _categoryEditorCard(category, document, visibleItems: _filteredItems(category, document)),
+          if (!categories.any((entry) => (_categoryFilter == 'all' || entry.id == _categoryFilter) && _filteredItems(entry, document).isNotEmpty))
+            _emptyCard(Icons.search_off_rounded, 'No matching menu items', 'Try another search or change the filters.'),
+        ],
       ],
     );
   }
 
-  Widget _categoryEditorCard(MenuCategory category, MenuDocument document) {
+  // Match all saved translations so owners can find an item even while editing another language.
+  List<MenuItem> _filteredItems(MenuCategory category, MenuDocument document) {
+    return category.items.where((item) {
+      final matchesAvailability = _availabilityFilter == 'all' ||
+          (_availabilityFilter == 'available' && item.available) ||
+          (_availabilityFilter == 'unavailable' && !item.available);
+      final searchable = [
+        ...item.translations.values.expand((values) => values.values),
+        ...category.translations.values.expand((values) => values.values),
+      ].join(' ').toLowerCase();
+      return matchesAvailability && (_menuSearch.isEmpty || searchable.contains(_menuSearch));
+    }).toList();
+  }
+
+  Widget _menuFilterChip(String label, String value, bool selected, VoidCallback onTap) => Padding(
+        padding: const EdgeInsets.only(right: 6, bottom: 5),
+        child: ChoiceChip(
+          key: ValueKey(value),
+          label: Text(label, overflow: TextOverflow.ellipsis),
+          selected: selected,
+          onSelected: (_) => onTap(),
+          visualDensity: VisualDensity.compact,
+        ),
+      );
+
+  Widget _categoryEditorCard(MenuCategory category, MenuDocument document, {List<MenuItem>? visibleItems}) {
     final title = category.titleFor(_locale, document.defaultLocale);
     return Container(
       margin: const EdgeInsets.only(bottom: 13),
@@ -379,7 +554,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(width: 10),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(title.isEmpty ? 'Untitled category' : title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900)),
-              Text('${category.items.length} items', style: const TextStyle(fontSize: 10, color: Color(0xFF7B857E))),
+              Text('${visibleItems?.length ?? category.items.length} items', style: const TextStyle(fontSize: 10, color: Color(0xFF7B857E))),
             ])),
             IconButton(tooltip: 'Edit category', onPressed: () => _showCategoryDialog(category: category), icon: const Icon(Icons.edit_outlined, size: 18)),
             PopupMenuButton<String>(
@@ -392,7 +567,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ]),
           if (category.items.isNotEmpty) const Divider(height: 18),
-          ...category.items.map((item) => _itemRow(item, document)),
+          ...(visibleItems ?? category.items).map((item) => _itemRow(item, document)),
         ],
       ),
     );
@@ -429,7 +604,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _showItemDialog(item: item);
                 }
                 if (value == 'delete') {
-                  await widget.repository.deleteItem(item.id);
+                  await _deleteItem(item);
                 }
                 if (value == 'toggle') {
                   await widget.repository.setItemAvailability(item.id, !item.available);
@@ -461,6 +636,12 @@ class _HomeScreenState extends State<HomeScreen> {
         const Text('READY-MADE MENU LIBRARY', style: TextStyle(fontSize: 10, letterSpacing: 1.35, fontWeight: FontWeight.w900, color: Color(0xFF6B786F))),
         const SizedBox(height: 7),
         const Text('Your menu. A design you love.', style: TextStyle(fontSize: 27, fontWeight: FontWeight.w900, letterSpacing: -.8)),
+        const SizedBox(height: 7),
+        OutlinedButton.icon(
+          onPressed: _openCustomerPreview,
+          icon: const Icon(Icons.phone_iphone_rounded),
+          label: const Text('Preview full customer menu'),
+        ),
         const SizedBox(height: 7),
         Text('${MenuTemplateCatalog.all.length} ready-made designs. Your shop name, dishes and prices flow into every template automatically.',
             style: const TextStyle(color: Color(0xFF78827B), height: 1.5, fontSize: 12)),
@@ -601,6 +782,16 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: BoxDecoration(color: accent.withValues(alpha: .55), borderRadius: BorderRadius.circular(6)),
         child: Icon(Icons.restaurant_rounded, color: accent.computeLuminance() > .5 ? const Color(0xFF4B514C) : Colors.white, size: 16),
       );
+
+  Future<void> _openCustomerPreview() async {
+    if (_document.shop.name.values.every((value) => value.trim().isEmpty)) {
+      _message('Add your shop name before previewing the customer menu.');
+      return;
+    }
+    await Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (_) => CustomerMenuPreviewScreen(document: _document.copy()),
+    ));
+  }
 
   Future<void> _selectTemplate(MenuTemplate template) async {
     if (template.id == _document.templateId && _document.templateSelected) { return; }
@@ -854,7 +1045,34 @@ class _HomeScreenState extends State<HomeScreen> {
     if (approved == true) {
       try {
         await widget.repository.deleteCategory(category.id, deleteItems: true);
+        if (_categoryFilter == category.id) setState(() => _categoryFilter = 'all');
         _message('Category deleted.');
+      } catch (error) {
+        _message(_cleanError(error));
+      }
+    }
+  }
+
+  Future<void> _deleteItem(MenuItem item) async {
+    final approved = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete this menu item?'),
+        content: Text('“${item.nameFor(_locale, _document.defaultLocale)}” will be removed from your saved menu.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: FilledButton.styleFrom(backgroundColor: const Color(0xFF9B4A36)),
+            child: const Text('Delete item'),
+          ),
+        ],
+      ),
+    );
+    if (approved == true) {
+      try {
+        await widget.repository.deleteItem(item.id);
+        if (mounted) _message('Menu item deleted.');
       } catch (error) {
         _message(_cleanError(error));
       }
@@ -886,7 +1104,12 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 10),
           TextField(controller: description, maxLines: 2, decoration: InputDecoration(labelText: 'Description (${_locale.toUpperCase()})')),
           const SizedBox(height: 10),
-          TextField(controller: price, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Price in ₹')),
+          TextField(
+            controller: price,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
+            decoration: const InputDecoration(labelText: 'Price in ₹', prefixText: '₹ ', helperText: 'Use up to 2 decimal places'),
+          ),
           const SizedBox(height: 10),
           DropdownButtonFormField<String>(
             initialValue: categoryId,
@@ -930,7 +1153,7 @@ class _HomeScreenState extends State<HomeScreen> {
           TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
           FilledButton(onPressed: () {
             final parsed = double.tryParse(price.text.trim().replaceAll(',', '.'));
-            if (name.text.trim().isEmpty || parsed == null || !parsed.isFinite || parsed < 0) {
+            if (name.text.trim().isEmpty || parsed == null || !parsed.isFinite || parsed < 0 || price.text.trim().isEmpty) {
               _message('Enter an item name and a valid non-negative price.');
               return;
             }

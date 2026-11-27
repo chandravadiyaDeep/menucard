@@ -47,13 +47,25 @@
 
     const content = $("menu-content");
     content.replaceChildren();
+    const searchTerm = ($("menu-search")?.value || "").trim().toLocaleLowerCase(activeLocale);
     const categories = [...menu.categories].sort((a, b) => a.sort_order - b.sort_order);
-    if (!categories.length) content.append(element("p", "empty", "This menu has no items yet."));
+    let visibleItemCount = 0;
 
     for (const category of categories) {
+      const categoryTitle = translated(category.translations, "title") || "Menu";
+      const allItems = [...(category.items || [])].sort((a, b) => a.sort_order - b.sort_order);
+      const categoryMatches = categoryTitle.toLocaleLowerCase(activeLocale).includes(searchTerm);
+      const items = searchTerm && !categoryMatches
+        ? allItems.filter((item) => {
+            const name = translated(item.translations, "name").toLocaleLowerCase(activeLocale);
+            const description = translated(item.translations, "description").toLocaleLowerCase(activeLocale);
+            return name.includes(searchTerm) || description.includes(searchTerm);
+          })
+        : allItems;
+      if (searchTerm && items.length === 0) continue;
       const section = element("section", "category");
-      section.append(element("h2", "", translated(category.translations, "title") || "Menu"));
-      const items = [...(category.items || [])].sort((a, b) => a.sort_order - b.sort_order);
+      section.append(element("h2", "", categoryTitle));
+      visibleItemCount += items.length;
       for (const item of items) {
         const card = element("article", "menu-item");
         const copy = element("div", "item-copy");
@@ -79,8 +91,14 @@
       content.append(section);
     }
 
-    $("menu-status").textContent = "Published revision " + menu.revision +
-      " · Updated " + new Date(menu.updated_at).toLocaleString();
+    if (searchTerm && visibleItemCount === 0) {
+      content.append(element("p", "empty", "No menu items match your search."));
+    } else if (!categories.length) {
+      content.append(element("p", "empty", "This menu has no items yet."));
+    }
+    $("menu-status").textContent = searchTerm
+      ? visibleItemCount + " matching item(s)"
+      : "Published revision " + menu.revision + " · Updated " + new Date(menu.updated_at).toLocaleString();
     document.documentElement.lang = activeLocale;
   }
 
@@ -98,9 +116,14 @@
   async function start() {
     try {
       // Revalidate on every page load. The host must also permit menu.json cache revalidation.
-      const response = await fetch("menu.json", { cache: "no-store" });
-      if (!response.ok) throw new Error("Menu file not found");
-      menu = await response.json();
+      // The owner preview injects its private local snapshot. Public pages fetch menu.json.
+      if (window.__MENUCARD_PREVIEW__) {
+        menu = window.__MENUCARD_PREVIEW__;
+      } else {
+        const response = await fetch("menu.json", { cache: "no-store" });
+        if (!response.ok) throw new Error("Menu file not found");
+        menu = await response.json();
+      }
       if (menu.schema_version !== 1 || !menu.shop || !Array.isArray(menu.categories)) {
         throw new Error("Unsupported or invalid menu file");
       }
@@ -115,6 +138,7 @@
       activeLocale = languages.includes(menu.default_locale) ? menu.default_locale : languages[0];
       select.value = activeLocale;
       select.addEventListener("change", () => { activeLocale = select.value; render(); });
+      $("menu-search")?.addEventListener("input", render);
       render();
     } catch (error) {
       $("shop-name").textContent = "Menu unavailable";

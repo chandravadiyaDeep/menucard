@@ -13,8 +13,10 @@ Flutter owner app that turns a shop profile and its dishes/prices into a ready-m
 1. Create a shop profile.
 2. Add categories, dishes, descriptions and prices.
 3. Browse the ready-made design library and apply a template.
-4. Preview and export the customer-facing website package.
-5. Upload the ZIP manually and share the QR code.
+4. Preview the complete customer-facing menu using the same offline HTML/CSS/JavaScript renderer as the exported site.
+5. Search and filter menu items by name, description, category and availability.
+6. Export the customer-facing website package.
+7. Upload the ZIP manually and share the QR code.
 
 The selected design is stored as a stable `template_id` in the public menu JSON. Menu content remains separate, so owners can switch designs without losing their dishes or prices.
 

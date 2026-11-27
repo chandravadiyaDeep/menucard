@@ -13,7 +13,7 @@ All owner-side application logic runs on-device:
 2. Domain: validation, price conversion, language fallback, category/item rules and revision management.
 3. Design system: 120 ready-made combinations from 10 layout families and 12 curated themes; templates are data-driven and separate from shop content.
 4. Data: local JSON repository, atomic file persistence, image files and backup import/export.
-5. Rendering/publishing: bind the current shop/menu JSON to the selected template, preview it offline, package static assets, export ZIP, validate HTTPS URL and generate QR.
+5. Rendering/publishing: bind the current shop/menu JSON to the selected template, preview it offline using the exact customer HTML/CSS/JavaScript renderer in a local WebView, package static assets, export ZIP, validate HTTPS URL and generate QR.
 6. Platform adapters: Android file picker, share sheet and storage APIs.
 
 The UI must call repositories/use cases; it must not write JSON files directly.
@@ -41,6 +41,8 @@ See [sample-menu.json](../examples/sample-menu.json). The schema is versioned. U
 - `template_id` uses a stable `layout-theme` ID, such as `editorial-terracotta`.
 - Flutter's template catalog provides the owner gallery and visual previews. The exported customer viewer uses the same ID to apply the matching CSS layout and theme.
 - The browser renderer uses an allowlist for layout and theme identifiers and renders owner-provided text through `textContent`, never executable HTML.
+- The owner preview injects a validated local public-JSON snapshot into the same renderer used by the exported site. Local item photos are embedded as data URLs for offline preview; no network request or server is required.
+- The customer renderer supports search across translated category names, dish names and descriptions. Search is presentation-only and never mutates the stored menu JSON.
 - Changing a menu field and changing a template are independent operations. Existing data remains intact when the owner switches designs.
 
 ## Manual publishing contract
@@ -57,7 +59,7 @@ The package is self-contained and uses relative paths. It must work when hosted 
 
 ### Owner workflow
 1. Edit the menu locally; the app increments the local revision and saves JSON.
-2. Open Publish menu and inspect the customer preview.
+2. Open Designs and inspect the full customer preview. The preview uses the exact static customer renderer and current local menu snapshot.
 3. Tap Export website package. The app validates public fields and creates a ZIP file.
 4. The owner uploads/extracts the ZIP through a static hosting provider's manual upload/dashboard flow. The provider must allow commercial use and static file hosting under its current terms.
 5. On first publish, the owner copies the resulting HTTPS URL back into MenuCard and confirms that the customer page opens.
