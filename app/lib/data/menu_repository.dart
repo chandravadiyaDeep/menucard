@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 import 'menu_document.dart';
+import '../design/menu_template_catalog.dart';
 
 /// Owns all local JSON reads, writes and menu mutations.
 class MenuRepository extends ChangeNotifier {
@@ -104,6 +105,14 @@ class MenuRepository extends ChangeNotifier {
         next.categories.add(category);
       }
     });
+  }
+
+  // Save the selected visual template without changing any shop/menu text.
+  Future<void> setTemplate(String templateId) async {
+    if (!MenuTemplateCatalog.all.any((template) => template.id == templateId)) {
+      throw ArgumentError('Choose a valid ready-made menu design.');
+    }
+    await _mutate((next) => next.templateId = templateId);
   }
 
   Future<void> deleteCategory(String id, {required bool deleteItems}) async {
