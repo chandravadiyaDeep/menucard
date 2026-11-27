@@ -66,7 +66,9 @@ class OfflineAccountRepository {
     var added = 0;
     for (final raw in codes) {
       final code = _normalizeCode(raw);
-      if (code.length < 10) continue;
+      if (code.length < 10) {
+        continue;
+      }
       final salt = _randomHex(16);
       final hash = _hash(code, salt);
       final alreadyImported = records.any((record) =>
@@ -86,7 +88,9 @@ class OfflineAccountRepository {
     if (digits.length < 10 || digits.length > 15) {
       throw ArgumentError('Enter a valid mobile number.');
     }
-    if (shopName.trim().isEmpty) throw ArgumentError('Enter your shop name.');
+    if (shopName.trim().isEmpty) {
+      throw ArgumentError('Enter your shop name.');
+    }
     final accounts = (_state['accounts'] as List).cast<Map<String, dynamic>>();
     if (accounts.any((a) => a['mobile'] == phone)) {
       throw StateError('An account already exists for this mobile on this device. Use Sign in.');
