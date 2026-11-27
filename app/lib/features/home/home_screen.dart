@@ -213,6 +213,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 10),
         OutlinedButton.icon(
+          key: const ValueKey('home-customer-preview'),
           onPressed: _openCustomerPreview,
           icon: const Icon(Icons.visibility_outlined),
           label: const Text('Preview customer menu'),
@@ -445,6 +446,7 @@ class _HomeScreenState extends State<HomeScreen> {
         const Text('Add products, set prices and keep availability up to date. Your edits are saved locally.', style: TextStyle(color: Color(0xFF78827B), height: 1.45, fontSize: 12)),
         const SizedBox(height: 12),
         OutlinedButton.icon(
+          key: const ValueKey('menu-customer-preview'),
           onPressed: _openCustomerPreview,
           icon: const Icon(Icons.phone_iphone_rounded),
           label: const Text('Preview customer menu'),
