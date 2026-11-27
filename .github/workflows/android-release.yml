@@ -73,6 +73,34 @@ jobs:
         working-directory: app
         run: timeout 240s flutter test --reporter expanded
 
+      - name: Verify owner code generator output
+        run: |
+          set -euo pipefail
+          TMP_DIR="$(mktemp -d)"
+          cp tools/generate_owner_codes.py "$TMP_DIR/"
+          cd "$TMP_DIR"
+          python3 generate_owner_codes.py
+          python3 - <<'PY'
+          import csv
+          import json
+          import zipfile
+          from pathlib import Path
+
+          ledger = list(csv.DictReader(Path("menucard-issuer-ledger.csv").open(encoding="utf-8")))
+          assert len(ledger) == 100, f"expected 100 issued codes, got {len(ledger)}"
+          codes = [row["access_code"] for row in ledger]
+          assert len(set(codes)) == 100, "duplicate access code generated"
+          assert all(len(code.replace("-", "")) == 15 for code in codes), "unexpected code length"
+          with zipfile.ZipFile("menucard-personal-code-files.zip") as archive:
+              names = archive.namelist()
+              assert len(names) == 100, f"expected 100 personal files, got {len(names)}"
+              for name in names:
+                  payload = json.loads(archive.read(name))
+                  assert payload["schema_version"] == 1 and isinstance(payload["code"], str)
+                  assert "codes" not in payload, "individual file must not expose the full batch"
+          print("Owner code generator checks passed: 100 unique personal code files.")
+          PY
+
       - name: Check customer menu JavaScript syntax
         run: node --check app/assets/publish/assets/menu.js
 
@@ -80,7 +108,7 @@ jobs:
         run: node --test app/test/menu_renderer_test.cjs
 
       - name: Validate production signing secrets
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') && !endsWith(github.ref, '-test')
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -137,7 +165,7 @@ jobs:
           retention-days: 30
 
       - name: Publish signed production APK to GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') && !endsWith(github.ref, '-test')
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
@@ -163,6 +191,21 @@ jobs:
             - Simplified Publish tab: public HTTPS link to QR code, on-device PNG/PDF export and native sharing.
 
             This is a release-mode test APK signed with the default debug key because production signing secrets are not configured. It is intended for device testing, not Play Store distribution.
+          files: |
+            app/build/app/outputs/flutter-apk/app-release.apk
+            app/build/app/outputs/flutter-apk/SHA256SUMS.txt
+          make_latest: true
+
+      # Test tags intentionally use the Android debug key; label them as test APKs.
+      - name: Publish Android physical-testing APK
+        if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-test')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: MenuCard ${{ github.ref_name }} — physical testing build
+          body: |
+            MenuCard Android release-mode test APK for physical-device validation.
+
+            This APK is signed with the default Android debug key because production signing secrets are not configured. It is for physical testing only and is not suitable for Play Store distribution or production updates.
           files: |
             app/build/app/outputs/flutter-apk/app-release.apk
             app/build/app/outputs/flutter-apk/SHA256SUMS.txt
