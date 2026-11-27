@@ -111,16 +111,16 @@ class _QrMenuScreenState extends State<QrMenuScreen> {
                 mainAxisAlignment: pw.MainAxisAlignment.center,
                 crossAxisAlignment: pw.CrossAxisAlignment.center,
                 children: [
+                  // Use a universal PDF label so Gujarati/Hindi shop names do not
+                  // depend on a font that may be unavailable on the device.
                   pw.Text(
-                    shopName,
+                    'SCAN TO VIEW OUR MENU',
                     textAlign: pw.TextAlign.center,
                     style: pw.TextStyle(
-                      fontSize: 25,
+                      fontSize: 18,
                       fontWeight: pw.FontWeight.bold,
                     ),
                   ),
-                  pw.SizedBox(height: 14),
-                  pw.Text('Scan to view our menu', style: const pw.TextStyle(fontSize: 14)),
                   pw.SizedBox(height: 24),
                   pw.Image(qrImage, width: 280, height: 280),
                   pw.SizedBox(height: 20),
@@ -282,7 +282,7 @@ class _QrMenuScreenState extends State<QrMenuScreen> {
                             key: const ValueKey('share-qr-png'),
                             onPressed: _isExporting ? null : () => _exportQr(asPdf: false),
                             icon: const Icon(Icons.image_outlined, size: 17),
-                            label: const Text('Image (PNG)'),
+                            label: const Text('Export / share PNG'),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -291,7 +291,7 @@ class _QrMenuScreenState extends State<QrMenuScreen> {
                             key: const ValueKey('share-qr-pdf'),
                             onPressed: _isExporting ? null : () => _exportQr(asPdf: true),
                             icon: const Icon(Icons.picture_as_pdf_outlined, size: 17),
-                            label: const Text('PDF'),
+                            label: const Text('Export / share PDF'),
                           ),
                         ),
                       ],
