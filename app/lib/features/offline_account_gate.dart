@@ -25,7 +25,7 @@ class _OfflineAccountGateState extends State<OfflineAccountGate> {
   @override
   void dispose() { _mobile.dispose(); _code.dispose(); _shop.dispose(); super.dispose(); }
 
-  Future<void> _importBatch() async {
+  Future<void> _importPersonalCode() async {
     try {
       final result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: ['json'], withData: true);
       if (result == null || result.files.single.bytes == null) return;
@@ -40,7 +40,11 @@ class _OfflineAccountGateState extends State<OfflineAccountGate> {
       }
       final count = await widget.repository.importCodes([code]);
       if (mounted) { setState(() => _message = count == 1 ? 'Your personal code is ready. Activate your account.' : 'This code was already imported on this device.'); }
-    } catch (error) { if (mounted) { setState(() => _message = error.toString()); } }
+    } catch (error) {
+      if (mounted) {
+        setState(() => _message = error.toString());
+      }
+    }
   }
 
   Future<void> _restoreAccount() async {
@@ -62,7 +66,7 @@ class _OfflineAccountGateState extends State<OfflineAccountGate> {
         ),
       );
       if (approved != true) return;
-      await widget.repository.restoreRecoveryJson(await picked.readAsString());
+      await widget.repository.restoreRecoveryJson(utf8.decode(await picked.readAsBytes()));
       if (mounted) {
         setState(() {
           _unlocked = widget.repository.hasAccount;
