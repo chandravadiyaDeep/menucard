@@ -119,6 +119,61 @@ void main() {
     expect(find.text('Samosa'), findsNothing);
     expect(find.text('No matching menu items'), findsNothing);
 
+    // Empty results expose one-tap filter reset instead of trapping the owner.
+    await tester.enterText(searchField, 'not-a-real-dish');
+    await tester.pumpAndSettle();
+    expect(find.text('Clear all filters'), findsOneWidget);
+    await tester.tap(find.text('Clear all filters'));
+    await tester.pumpAndSettle();
+    expect(find.text('Masala Chai'), findsOneWidget);
+    expect(find.text('Samosa'), findsOneWidget);
+
+    // Availability chips narrow the menu without changing the saved items.
+    await tester.tap(find.text('Paused'));
+    await tester.pumpAndSettle();
+    expect(find.text('Samosa'), findsOneWidget);
+    expect(find.text('Masala Chai'), findsNothing);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.runAsync(() async {
+      repository.dispose();
+      await sandbox.delete(recursive: true);
+    });
+  });
+
+  testWidgets('customer preview is reachable from Home and My menu', (tester) async {
+    late Directory sandbox;
+    late MenuRepository repository;
+
+    // Preview navigation is tested without invoking the native WebView plugin.
+    await tester.runAsync(() async {
+      sandbox = await Directory.systemTemp.createTemp('menucard-preview-entry-');
+      repository = await MenuRepository.openAt(File('${sandbox.path}/menu.json'));
+      await repository.saveShop(
+        name: 'Preview Cafe',
+        description: '',
+        translationLocale: 'en',
+        defaultLocale: 'en',
+      );
+      await repository.saveCategory(title: 'Drinks', locale: 'en');
+      await repository.saveItem(
+        categoryId: repository.document.categories.single.id,
+        name: 'Masala Chai',
+        description: 'Fresh ginger tea',
+        locale: 'en',
+        priceMinor: 2000,
+        available: true,
+      );
+    });
+
+    await tester.pumpWidget(MenuCardApp(repository: repository));
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.byKey(const ValueKey('home-customer-preview')), findsOneWidget);
+
+    await tester.tap(find.text('My menu'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('menu-customer-preview')), findsOneWidget);
+
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.runAsync(() async {
       repository.dispose();
