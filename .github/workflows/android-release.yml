@@ -144,19 +144,22 @@ jobs:
           files: |
             app/build/app/outputs/flutter-apk/app-release.apk
             app/build/app/outputs/flutter-apk/SHA256SUMS.txt
-      - name: Publish V1.1.1 Android test APK
-        if: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'release: MenuCard v1.1.1') }}"
+      - name: Publish V1.1.2 Android test APK
+        if: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'release: MenuCard v1.1.2') }}"
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.1.1
+          tag_name: v1.1.2
           target_commitish: ${{ github.sha }}
-          name: MenuCard V1.1.1 — Android test APK
+          name: MenuCard V1.1.2 — Android test APK
           body: |
-            MenuCard V1.1.1 Android test build.
+            MenuCard V1.1.2 Android test build.
 
-            - Full offline customer menu preview using the same HTML/CSS/JavaScript renderer as website export.
-            - Owner and customer menu search, category and availability filters.
-            - Safer editing and price input.
+            - Full offline customer menu preview, reachable from Home, My menu and Designs.
+            - Preview uses the same bundled HTML/CSS/JavaScript renderer as the exported website.
+            - Local item photos are embedded for offline preview; photo lookup is indexed to keep larger menus responsive.
+            - Owner search covers translated item names, descriptions and categories.
+            - Category and availability filters include a one-tap clear-all action.
+            - Safer item deletion and two-decimal price input.
 
             This is a release-mode test APK signed with the default debug key because production signing secrets are not configured. It is intended for device testing, not Play Store distribution.
           files: |
