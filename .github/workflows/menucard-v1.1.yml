@@ -53,6 +53,9 @@ jobs:
       - name: Check customer menu JavaScript syntax
         run: node --check app/assets/publish/assets/menu.js
 
+      - name: Test customer menu renderer and search behavior
+        run: node --test app/test/menu_renderer_test.cjs
+
       - name: Build release APK
         working-directory: app
         run: flutter build apk --release
