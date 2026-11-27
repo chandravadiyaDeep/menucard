@@ -1,4 +1,7 @@
 import 'dart:io';
+import 'package:flutter/services.dart';
+
+import 'customer_menu_preview_screen.dart';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:material_ui/material_ui.dart';
@@ -27,6 +30,10 @@ class _HomeScreenState extends State<HomeScreen> {
   late final TextEditingController _urlController;
   bool _isExporting = false;
   String _templateLayoutFilter = 'All';
+  String _menuSearch = '';
+  String _availabilityFilter = 'all';
+  String _categoryFilter = 'all';
+  late final TextEditingController _searchController;
 
   MenuDocument get _document => widget.repository.document;
 
@@ -35,11 +42,13 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _locale = _document.defaultLocale;
     _urlController = TextEditingController(text: _document.publishedUrl ?? '');
+    _searchController = TextEditingController();
   }
 
   @override
   void dispose() {
     _urlController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -456,6 +465,38 @@ class _HomeScreenState extends State<HomeScreen> {
             onChanged: (value) => setState(() => _locale = value ?? 'en'),
           ),
         ]),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _searchController,
+          onChanged: (value) => setState(() => _menuSearch = value.trim().toLowerCase()),
+          decoration: InputDecoration(
+            hintText: 'Search dishes, descriptions or categories',
+            prefixIcon: const Icon(Icons.search_rounded),
+            suffixIcon: _menuSearch.isEmpty ? null : IconButton(
+              tooltip: 'Clear search',
+              onPressed: () { _searchController.clear(); setState(() => _menuSearch = ''); },
+              icon: const Icon(Icons.close_rounded),
+            ),
+          ),
+        ),
+        const SizedBox(height: 9),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(children: [
+            _menuFilterChip('All', 'all', _categoryFilter == 'all', () => setState(() => _categoryFilter = 'all')),
+            for (final category in categories)
+              _menuFilterChip(category.titleFor(_locale, document.defaultLocale), category.id, _categoryFilter == category.id, () => setState(() => _categoryFilter = category.id)),
+          ]),
+        ),
+        const SizedBox(height: 5),
+        Row(children: [
+          _menuFilterChip('All items', 'all', _availabilityFilter == 'all', () => setState(() => _availabilityFilter = 'all')),
+          const SizedBox(width: 6),
+          _menuFilterChip('Available', 'available', _availabilityFilter == 'available', () => setState(() => _availabilityFilter = 'available')),
+          const SizedBox(width: 6),
+          _menuFilterChip('Paused', 'unavailable', _availabilityFilter == 'unavailable', () => setState(() => _availabilityFilter = 'unavailable')),
+        ]),
+        const SizedBox(height: 10),
         Row(children: [
           Expanded(child: OutlinedButton.icon(onPressed: _showCategoryDialog, icon: const Icon(Icons.create_new_folder_outlined), label: const Text('Category'))),
           const SizedBox(width: 10),
@@ -464,13 +505,42 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 16),
         if (categories.isEmpty)
           _emptyCard(Icons.add_business_outlined, 'Start with a category', 'Create groups such as Tea & Coffee, Snacks or Desserts.')
-        else
-          ...categories.map((category) => _categoryEditorCard(category, document)),
+        else ...[
+          for (final category in categories.where((entry) => _categoryFilter == 'all' || entry.id == _categoryFilter))
+            if (_filteredItems(category, document).isNotEmpty || (_menuSearch.isEmpty && _availabilityFilter == 'all'))
+              _categoryEditorCard(category, document, visibleItems: _filteredItems(category, document)),
+          if (!categories.any((entry) => (_categoryFilter == 'all' || entry.id == _categoryFilter) && _filteredItems(entry, document).isNotEmpty))
+            _emptyCard(Icons.search_off_rounded, 'No matching menu items', 'Try another search or change the filters.'),
+        ],
       ],
     );
   }
 
-  Widget _categoryEditorCard(MenuCategory category, MenuDocument document) {
+  // Match all saved translations so owners can find an item even while editing another language.
+  List<MenuItem> _filteredItems(MenuCategory category, MenuDocument document) {
+    return category.items.where((item) {
+      final matchesAvailability = _availabilityFilter == 'all' ||
+          (_availabilityFilter == 'available' && item.available) ||
+          (_availabilityFilter == 'unavailable' && !item.available);
+      final searchable = [
+        ...item.translations.values.expand((values) => values.values),
+        ...category.translations.values.expand((values) => values.values),
+      ].join(' ').toLowerCase();
+      return matchesAvailability && (_menuSearch.isEmpty || searchable.contains(_menuSearch));
+    }).toList();
+  }
+
+  Widget _menuFilterChip(String label, String value, bool selected, VoidCallback onTap) => Padding(
+        padding: const EdgeInsets.only(right: 6, bottom: 5),
+        child: ChoiceChip(
+          label: Text(label, overflow: TextOverflow.ellipsis),
+          selected: selected,
+          onSelected: (_) => onTap(),
+          visualDensity: VisualDensity.compact,
+        ),
+      );
+
+  Widget _categoryEditorCard(MenuCategory category, MenuDocument document, {List<MenuItem>? visibleItems}) {
     final title = category.titleFor(_locale, document.defaultLocale);
     return Container(
       margin: const EdgeInsets.only(bottom: 13),
@@ -483,7 +553,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(width: 10),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(title.isEmpty ? 'Untitled category' : title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900)),
-              Text('${category.items.length} items', style: const TextStyle(fontSize: 10, color: Color(0xFF7B857E))),
+              Text('${visibleItems?.length ?? category.items.length} items', style: const TextStyle(fontSize: 10, color: Color(0xFF7B857E))),
             ])),
             IconButton(tooltip: 'Edit category', onPressed: () => _showCategoryDialog(category: category), icon: const Icon(Icons.edit_outlined, size: 18)),
             PopupMenuButton<String>(
@@ -496,7 +566,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ]),
           if (category.items.isNotEmpty) const Divider(height: 18),
-          ...category.items.map((item) => _itemRow(item, document)),
+          ...(visibleItems ?? category.items).map((item) => _itemRow(item, document)),
         ],
       ),
     );
@@ -533,7 +603,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _showItemDialog(item: item);
                 }
                 if (value == 'delete') {
-                  await widget.repository.deleteItem(item.id);
+                  await _deleteItem(item);
                 }
                 if (value == 'toggle') {
                   await widget.repository.setItemAvailability(item.id, !item.available);
@@ -565,6 +635,12 @@ class _HomeScreenState extends State<HomeScreen> {
         const Text('READY-MADE MENU LIBRARY', style: TextStyle(fontSize: 10, letterSpacing: 1.35, fontWeight: FontWeight.w900, color: Color(0xFF6B786F))),
         const SizedBox(height: 7),
         const Text('Your menu. A design you love.', style: TextStyle(fontSize: 27, fontWeight: FontWeight.w900, letterSpacing: -.8)),
+        const SizedBox(height: 7),
+        OutlinedButton.icon(
+          onPressed: _openCustomerPreview,
+          icon: const Icon(Icons.phone_iphone_rounded),
+          label: const Text('Preview full customer menu'),
+        ),
         const SizedBox(height: 7),
         Text('${MenuTemplateCatalog.all.length} ready-made designs. Your shop name, dishes and prices flow into every template automatically.',
             style: const TextStyle(color: Color(0xFF78827B), height: 1.5, fontSize: 12)),
@@ -705,6 +781,16 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: BoxDecoration(color: accent.withValues(alpha: .55), borderRadius: BorderRadius.circular(6)),
         child: Icon(Icons.restaurant_rounded, color: accent.computeLuminance() > .5 ? const Color(0xFF4B514C) : Colors.white, size: 16),
       );
+
+  Future<void> _openCustomerPreview() async {
+    if (_document.shop.name.values.every((value) => value.trim().isEmpty)) {
+      _message('Add your shop name before previewing the customer menu.');
+      return;
+    }
+    await Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (_) => CustomerMenuPreviewScreen(document: _document.copy()),
+    ));
+  }
 
   Future<void> _selectTemplate(MenuTemplate template) async {
     if (template.id == _document.templateId && _document.templateSelected) { return; }
@@ -965,6 +1051,32 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _deleteItem(MenuItem item) async {
+    final approved = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete this menu item?'),
+        content: Text('“${item.nameFor(_locale, _document.defaultLocale)}” will be removed from your saved menu.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: FilledButton.styleFrom(backgroundColor: const Color(0xFF9B4A36)),
+            child: const Text('Delete item'),
+          ),
+        ],
+      ),
+    );
+    if (approved == true) {
+      try {
+        await widget.repository.deleteItem(item.id);
+        if (mounted) _message('Menu item deleted.');
+      } catch (error) {
+        _message(_cleanError(error));
+      }
+    }
+  }
+
   Future<void> _showItemDialog({MenuItem? item}) async {
     final document = _document;
     if (document.categories.isEmpty) {
@@ -990,7 +1102,12 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 10),
           TextField(controller: description, maxLines: 2, decoration: InputDecoration(labelText: 'Description (${_locale.toUpperCase()})')),
           const SizedBox(height: 10),
-          TextField(controller: price, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Price in ₹')),
+          TextField(
+            controller: price,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\\d*\\.?\\d{0,2}'))],
+            decoration: const InputDecoration(labelText: 'Price in ₹', prefixText: '₹ ', helperText: 'Use up to 2 decimal places'),
+          ),
           const SizedBox(height: 10),
           DropdownButtonFormField<String>(
             initialValue: categoryId,
@@ -1034,7 +1151,7 @@ class _HomeScreenState extends State<HomeScreen> {
           TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
           FilledButton(onPressed: () {
             final parsed = double.tryParse(price.text.trim().replaceAll(',', '.'));
-            if (name.text.trim().isEmpty || parsed == null || !parsed.isFinite || parsed < 0) {
+            if (name.text.trim().isEmpty || parsed == null || !parsed.isFinite || parsed < 0 || price.text.trim().isEmpty) {
               _message('Enter an item name and a valid non-negative price.');
               return;
             }
