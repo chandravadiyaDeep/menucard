@@ -259,6 +259,24 @@ class MenuRepository extends ChangeNotifier {
         notifyListeners();
       });
 
+  /// Store the public URL encoded by the owner's menu QR code.
+  /// This is separate from website-upload confirmation so QR creation stays simple.
+  Future<void> saveQrMenuUrl(String url) => _enqueueWrite(() async {
+        final uri = Uri.tryParse(url.trim());
+        if (uri == null ||
+            uri.scheme.toLowerCase() != 'https' ||
+            uri.host.isEmpty ||
+            uri.userInfo.isNotEmpty ||
+            uri.hasFragment) {
+          throw ArgumentError('Enter a valid public HTTPS menu link.');
+        }
+        final next = _document.copy();
+        next.qrMenuUrl = uri.toString();
+        await _write(next);
+        _document = next;
+        notifyListeners();
+      });
+
   Future<void> confirmPublished(String url) => _enqueueWrite(() async {
         final uri = Uri.tryParse(url.trim());
         if (uri == null ||
