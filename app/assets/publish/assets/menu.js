@@ -33,6 +33,14 @@
   }
 
   function render() {
+    // Apply the owner's selected template using an allowlisted layout/theme pair.
+    // All menu text remains data; the design only changes how that data is presented.
+    const templateParts = String(menu.template_id || "classic-forest").split("-");
+    const layouts = new Set(["classic", "editorial", "compact", "photo", "chalkboard", "luxury", "modern", "rustic", "bistro", "streetfood"]);
+    const themes = new Set(["forest", "ocean", "saffron", "rose", "midnight", "cream", "lavender", "terracotta", "emerald", "cobalt", "charcoal", "coral"]);
+    document.body.dataset.layout = layouts.has(templateParts[0]) ? templateParts[0] : "classic";
+    document.body.dataset.theme = themes.has(templateParts[1]) ? templateParts[1] : "forest";
+
     $("shop-name").textContent = translatedShopText(menu.shop.name) || "Digital Menu";
     $("shop-description").textContent = translatedShopText(menu.shop.description);
     $("shop-meta").textContent = [menu.shop.address, menu.shop.phone].filter(Boolean).join(" · ");
