@@ -1,72 +1,79 @@
 # Product Discovery — Questions to Resolve
 
-This document records open decisions. Discuss and update it before committing to architecture or implementation.
+This document records open decisions before architecture or implementation.
 
-## 1. Product positioning
-- Is this primarily a fast QR and barcode scanner, or an AI-powered product information assistant?
-- What is the single strongest reason someone would keep this app instead of using the phone's built-in camera?
-- Should product information lookup be the standout feature, or should the app treat all QR payload types equally?
-- Who is the first target user: everyday consumers, shoppers, students, travellers, or a broader audience?
+## 1. Confirmed positioning
 
-## 2. Supported codes
-- Which QR payload types must be supported in the first release?
-- Which barcode formats matter most (for example EAN-13, EAN-8, UPC-A, UPC-E, Code 128)?
-- Should the first release scan from camera only, or also from saved images?
-- Is manual barcode entry required?
+**Agreed:** AI-powered universal information scanner — scan something, understand it, ask questions about it, and listen to the answer.
 
-## 3. Product information
-- Which product categories should be supported first?
-- Which product data provider or open catalogue should be evaluated?
-- What should the app show when the barcode is valid but no product record exists?
-- Should users be able to correct or contribute product details?
-- How should conflicting or stale catalogue information be displayed?
+**Agreed technology preference:** open-source-first services, open datasets, and self-hostable components wherever practical. Hosted APIs can be considered when their cost, terms, privacy, and reliability are acceptable.
 
-## 4. AI experience
-- Should AI appear as suggested action buttons on each result, a chat interface, or both?
-- Which three AI actions are most valuable for the first release?
-- Should users be able to ask follow-up questions about one scan?
-- Which languages should be supported initially?
-- Which AI provider and cost model should be evaluated?
-- What data may be sent to the AI provider, and only after what consent?
+## 2. Product focus
+- Which user group should we serve first: everyday consumers, shoppers, students, travellers, or another group?
+- What should be the first standout use case?
+- Should product discovery be the main differentiator, or should QR understanding and AI be equally central?
+- What does “universal” mean for the first release: QR and barcodes only, or OCR/image recognition too?
 
-## 5. Read-aloud
-- Should read-aloud speak only decoded text, or also product details and AI summaries?
-- Should it support language detection and multiple voices?
-- Should it work offline using device text-to-speech?
-- What controls are essential: play, pause, resume, stop, and speed?
+## 3. Code formats and scanning
+- Which QR payload types must be supported?
+- Which barcode formats should be included first (EAN-13, EAN-8, UPC-A, UPC-E, Code 128, etc.)?
+- Camera only, or gallery scan and manual entry too?
+- Which maintained open-source scanner library best fits the selected mobile framework and license requirements?
 
-## 6. Privacy and accounts
-- Should scanning work without an account?
-- Should history be stored only on-device by default?
-- Should users be able to sync history across devices?
-- Which actions require network access?
-- How can users inspect and delete their data?
+## 4. Product information and open data
+- Which product categories matter first: food, beauty, books, electronics, medicine, general retail?
+- Which open databases have useful coverage in the target market, especially India?
+- Can we use Open Food Facts for food and evaluate other category-specific datasets separately?
+- Should the app query public APIs live, use downloadable datasets, or combine both?
+- How will the UI show missing, conflicting, or stale data and its source?
 
-## 7. Platform and business model
-- Android first, iOS first, or cross-platform from the beginning?
-- Is the app intended to be free, ad-supported, freemium, or paid?
-- If AI has usage limits, how should they be communicated?
-- What is the expected budget for data APIs and AI usage?
+## 5. AI assistant
+- Which three actions should be in the first release: explain, ask questions, summarize, translate, compare, or extract?
+- Should AI be a contextual action panel, chat interface, or both?
+- Which open-weight model meets accuracy, latency, device/server resource, and license requirements?
+- Should inference run on-device, on our own server, or through a hosted open-model API?
+- What content may leave the device, and what consent is required?
 
-## 8. Validation plan
-Before implementation:
-1. Compare existing scanner apps and identify unmet needs.
-2. Test sample QR payloads and product barcode datasets.
-3. Evaluate product catalogue coverage for the target market.
-4. Prototype the scan-to-detail flow.
-5. Test AI answers for accuracy, unsupported claims, latency, and cost.
-6. Test read-aloud with different content lengths and languages.
-7. Agree on an MVP and measurable acceptance criteria.
+## 6. Read-aloud
+- Should it read raw decoded content, product details, and AI answers?
+- Should we start with native device text-to-speech, a self-hosted open model, or both?
+- Which languages and voices matter first?
+- Should speech work offline?
+
+## 7. Privacy, accounts, and history
+- Should basic scanning work without login?
+- Local-only history by default, or optional sync?
+- Which data is retained, for how long, and how can users delete it?
+- Which features need internet access?
+
+## 8. Platform and business model
+- Android first, iOS first, or cross-platform?
+- Free, freemium, ads, or paid?
+- If AI has a cost, what limits or usage model are acceptable?
+- What infrastructure budget is available for hosting open models and data services?
+
+## 9. Validation
+1. Compare scanner apps and identify a real unmet need.
+2. Test a representative set of QR payloads and barcode samples.
+3. Measure product database coverage for target categories and India.
+4. Compare candidate open-source scanner libraries and their licenses.
+5. Evaluate AI models for groundedness, hallucination rate, latency, and cost.
+6. Test TTS language coverage and intelligibility.
+7. Define an MVP and acceptance criteria before coding.
 
 ## Decision log
+
 | Topic | Decision | Status |
 |---|---|---|
-| Product category | QR and barcode scanner with contextual AI capabilities | Initial direction |
-| Read-aloud | Include as a candidate accessibility feature | Proposed |
+| Positioning | AI-powered universal information scanner | Agreed |
+| Core promise | Scan, understand, ask questions, listen | Agreed |
+| Technology preference | Open-source-first; self-host where practical | Agreed |
 | Product name | ScanWise is a temporary working name | Open |
+| Target user | Not selected | Open |
 | Platforms | Not decided | Open |
 | Barcode formats | Not decided | Open |
-| Data provider | Not decided | Open |
-| AI provider | Not decided | Open |
-| Accounts and sync | Not decided | Open |
+| Product data sources | Research required | Open |
+| AI model / hosting | Research required | Open |
+| TTS approach / languages | Not decided | Open |
+| Accounts / sync | Not decided | Open |
 | Monetization | Not decided | Open |
