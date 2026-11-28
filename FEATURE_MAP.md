@@ -13,6 +13,15 @@
 | Manual entry | Enter a barcode number or paste QR content | Candidate |
 | Duplicate handling | Avoid repeatedly creating identical history entries | Candidate |
 
+### Scanner implementation strategy (research only)
+The app targets Android + iOS. The camera experience should be evaluated separately from the barcode engine.
+
+- Candidate engines: Google ML Kit on both platforms, Google Code Scanner on Android, Apple Vision on iOS, and open-source ZXing-family implementations.
+- Candidate camera experience: app-owned camera preview, scan guide/overlay, flashlight, permission handling, and success feedback.
+- Normalize results from each engine into a shared internal scan-result format.
+- Keep scanner provider replaceable; do not couple result screens to a vendor SDK.
+- No engine, framework, or dependency is approved until the shared benchmark is completed.
+
 ## 2. Result and detail screen
 The result screen should adapt to the detected content type.
 
