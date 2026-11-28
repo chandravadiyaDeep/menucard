@@ -30,6 +30,7 @@ Product discovery and scanner research. Android + iOS are agreed as initial targ
 
 ## Documentation
 - [Product Vision](PRODUCT_VISION.md)
+- [Proposed Architecture](ARCHITECTURE.md)
 - [Feature Map](FEATURE_MAP.md)
 - [Discovery](DISCOVERY.md)
 - [Open-Source Stack Research](OPEN_SOURCE_STACK.md)
