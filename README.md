@@ -5,6 +5,7 @@
 An AI-powered universal information scanner: scan something, understand it, ask questions about it, and listen to the answer.
 
 ## Product direction
+- Initial platforms: Android + iOS.
 - Scan QR codes and supported product barcodes.
 - Decode the content and identify its type.
 - Retrieve additional information from open datasets and suitable public APIs where available.
@@ -12,11 +13,20 @@ An AI-powered universal information scanner: scan something, understand it, ask 
 - Let users ask contextual AI questions, get explanations and summaries, translate, and listen with read-aloud.
 - Prefer open-source software, open data, and self-hostable services.
 
+## Scanner strategy
+The scanner engine has not been selected. We are comparing:
+- Google Code Scanner — Android-only, ready-made Google scanner UI.
+- Google ML Kit Barcode Scanning — Android + iOS, supports an app-owned camera UI.
+- Apple Vision — native iOS barcode detection.
+- ZXing family / zxing-cpp — open-source alternatives requiring platform integration and benchmarking.
+
+The architecture will keep scanner providers replaceable. See [Open-Source Stack Research](OPEN_SOURCE_STACK.md) for the comparison and benchmark plan.
+
 ## Open-source-first principle
-Use open-source libraries and models wherever practical. Prefer public/open data sources for enrichment. Self-host AI and speech services when feasible; use hosted APIs only when they are open, affordable, reliable, and their data terms are acceptable. Record the software, model, and dataset licenses before adoption.
+Use open-source libraries and models wherever practical. Prefer public/open data sources for enrichment. Self-host AI and speech services when feasible; use hosted APIs or proprietary SDKs only after reviewing cost, reliability, privacy, licensing, and data terms. Record software, model, and dataset licenses before adoption.
 
 ## Current status
-Product discovery. The positioning is agreed, but the MVP, platforms, data providers, AI model, and deployment choices are not finalized. No application implementation has been approved.
+Product discovery and scanner research. Android + iOS are agreed as initial targets. The scanner engine, mobile framework, MVP, data providers, AI model, and deployment choices are not finalized. No application implementation has been approved.
 
 ## Documentation
 - [Product Vision](PRODUCT_VISION.md)
