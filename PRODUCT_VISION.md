@@ -1,7 +1,9 @@
 # Product Vision — AI-Powered Universal Information Scanner
 
 **Status:** Agreed product positioning; detailed scope remains under discovery  
-**Working name:** ScanWise (not final)
+**Working name:** ScanWise (not final)  
+**Initial platforms:** Android + iOS (agreed)  
+**Scanner strategy:** Compare Google Code Scanner, Google ML Kit, Apple Vision, and open-source ZXing-family options before selection (agreed)
 
 ## 1. Vision
 
@@ -13,8 +15,8 @@ The app should do more than decode a string or open a link. It should help peopl
 
 ## 2. Core experience
 
-1. **Scan:** use the camera or, if approved, an image from the gallery.
-2. **Decode:** identify the symbology and extract the QR payload or barcode identifier.
+1. **Scan:** use the app's branded camera experience, or an approved image-import flow.
+2. **Decode:** use a replaceable platform scanner adapter to extract the QR payload or barcode identifier.
 3. **Classify:** determine whether the result is a URL, product identifier, contact card, text, Wi-Fi payload, or another supported type.
 4. **Enrich:** query relevant open datasets or APIs when available. Do not assume every code has a matching public record.
 5. **Present:** show the decoded content, useful details, data provenance, and safe user-controlled actions.
@@ -45,24 +47,38 @@ Candidate contextual capabilities:
 
 AI must distinguish between decoded data, external dataset results, and generated interpretation. It must not invent missing product details or present unsupported claims as facts.
 
-## 5. Open-source-first technology and data principle
+## 5. Scanner strategy and camera ownership
+
+The app targets Android and iOS. Scanner selection is an open technical decision; the comparison and benchmark are recorded in OPEN_SOURCE_STACK.md.
+
+- **Google Code Scanner:** Android-only, ready-made Google-controlled scanning UI. Useful as a low-effort option, but not compatible with the requirement for one branded camera experience across both platforms.
+- **Google ML Kit Barcode Scanning:** available on Android and iOS. The app can own the camera UI and pass frames to the scanning engine. It is a strong cross-platform candidate but is a proprietary SDK, not open-source.
+- **Apple Vision:** native iOS barcode detection candidate with an app-owned camera UI. Android would need a separate engine, so behavior parity must be tested.
+- **ZXing family / zxing-cpp:** open-source candidate for both platforms through maintained native bindings. More camera and integration work may be required.
+
+The app should keep camera capture separate from barcode decoding and expose a normalized internal scanner interface. This allows platform-specific engines to be compared or replaced without rewriting the result experience.
+
+No scanner engine, mobile framework, or implementation dependency is approved yet.
+
+## 6. Open-source-first technology and data principle
 
 The project will prioritize:
 1. Open-source scanning, OCR, AI, and speech software.
 2. Open datasets and APIs with clear reuse terms.
 3. Self-hostable inference and processing services when feasible.
-4. Hosted services only after evaluating price, reliability, privacy, rate limits, and licensing.
+4. Hosted or proprietary SDKs only after evaluating price, reliability, privacy, rate limits, licensing, and the concrete product benefit.
 5. Replaceable providers behind internal interfaces so the product is not locked to one vendor.
 
 “Open source” must be checked at the correct layer: application code, model weights, dataset, API service, and hosted provider can each have different licenses or terms. A free API is not automatically open source, and an open-weight model is not automatically unrestricted for every use.
 
-## 6. Intended users and use cases
+## 7. Intended users and use cases
 
 Potential users include shoppers, everyday consumers, students, travellers, and people who prefer spoken or simplified explanations. These groups remain hypotheses until validated.
 
-## 7. Product principles
+## 8. Product principles
 
 - **Scan first:** scanning and decoding must remain fast.
+- **Own the experience:** the app should own the branded camera UI if custom scanner UI is selected.
 - **Useful understanding:** show structured details rather than raw data alone.
 - **Honest provenance:** identify whether information came from the code, a dataset, or AI.
 - **Open-source first:** prefer auditable, replaceable, self-hostable components.
@@ -71,7 +87,7 @@ Potential users include shoppers, everyday consumers, students, travellers, and 
 - **Accessible:** provide readable layouts and read-aloud.
 - **Graceful fallback:** scanning and raw decoding should work even if AI or enrichment services are unavailable.
 
-## 8. Privacy, security, and trust
+## 9. Privacy, security, and trust
 
 - Request camera permission only when needed.
 - Process camera frames locally where practical.
@@ -82,10 +98,10 @@ Potential users include shoppers, everyday consumers, students, travellers, and 
 - Store history locally by default unless a different model is explicitly approved.
 - Review licenses, data terms, and retention policies before integrating a provider.
 
-## 9. Initial scope boundary
+## 10. Initial scope boundary
 
-The likely first milestone includes camera-based QR and common barcode scanning, reliable decoding, content classification, a detailed result screen, a small set of contextual AI actions, and read-aloud. Exact formats, platforms, catalogue coverage, AI model, deployment, and monetization remain open.
+The likely first milestone includes camera-based QR and common barcode scanning, reliable decoding, content classification, a detailed result screen, a small set of contextual AI actions, and read-aloud. Exact formats, scanner engine, framework, catalogue coverage, AI model, deployment, and monetization remain open.
 
-## 10. Success statement
+## 11. Success statement
 
 A person can scan a supported code, understand what it contains, retrieve useful information where reliable open data exists, ask relevant questions, and listen to a clear answer — without being misled about the source or certainty of the information.
