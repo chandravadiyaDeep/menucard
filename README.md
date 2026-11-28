@@ -1,23 +1,28 @@
-# ScanWise — QR & Barcode Scanner with AI
+# AI-Powered Universal Information Scanner
 
-> Working project name. Final name and branding are not decided.
+> Working name: ScanWise (not final)
 
-ScanWise is a mobile-first QR code and barcode scanner concept. The goal is simple: scan a code, understand what it represents, see useful information in a clear format, and use AI tools to make that information easier to understand and act on.
+An AI-powered universal information scanner: scan something, understand it, ask questions about it, and listen to the answer.
 
 ## Product direction
-- Scan QR codes and common product barcodes.
-- Show the decoded content and relevant details in an organized view.
-- Make information readable, explainable, and accessible with a read-aloud option.
-- Add practical, app-based AI capabilities that help users understand scanned content.
-- Keep the experience fast, trustworthy, privacy-conscious, and easy to use.
+- Scan QR codes and supported product barcodes.
+- Decode the content and identify its type.
+- Retrieve additional information from open datasets and suitable public APIs where available.
+- Present results in a clear, detailed, source-aware format.
+- Let users ask contextual AI questions, get explanations and summaries, translate, and listen with read-aloud.
+- Prefer open-source software, open data, and self-hostable services.
+
+## Open-source-first principle
+Use open-source libraries and models wherever practical. Prefer public/open data sources for enrichment. Self-host AI and speech services when feasible; use hosted APIs only when they are open, affordable, reliable, and their data terms are acceptable. Record the software, model, and dataset licenses before adoption.
 
 ## Current status
-This repository has been reset from the previous MenuCard project. The current work is product discovery and vision definition only. No application implementation or final feature scope has been approved.
+Product discovery. The positioning is agreed, but the MVP, platforms, data providers, AI model, and deployment choices are not finalized. No application implementation has been approved.
 
 ## Documentation
-- [Product Vision](PRODUCT_VISION.md) — problem, users, experience, and product principles.
-- [Feature Map](FEATURE_MAP.md) — candidate scanner, information, accessibility, and AI capabilities.
-- [Discovery](DISCOVERY.md) — open questions and decisions to make before implementation.
-- [Current State](CURRENT_STATE.md) — project status and working rules.
+- [Product Vision](PRODUCT_VISION.md)
+- [Feature Map](FEATURE_MAP.md)
+- [Discovery](DISCOVERY.md)
+- [Open-Source Stack Research](OPEN_SOURCE_STACK.md)
+- [Current State](CURRENT_STATE.md)
 
-This is an early concept, not a promise that every listed capability is already available. Features remain candidates until researched, prioritized, and approved.
+Do not treat candidate features or technology suggestions as implemented or approved until decisions are recorded.
