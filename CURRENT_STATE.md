@@ -34,6 +34,7 @@ Official references and detailed comparison are in OPEN_SOURCE_STACK.md.
 
 ## Current documentation
 - README.md
+- ARCHITECTURE.md
 - PRODUCT_VISION.md
 - FEATURE_MAP.md
 - DISCOVERY.md
