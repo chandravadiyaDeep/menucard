@@ -1,100 +1,91 @@
-# Product Vision — QR & Barcode Scanner with AI
+# Product Vision — AI-Powered Universal Information Scanner
 
-**Status:** Draft for discussion  
+**Status:** Agreed product positioning; detailed scope remains under discovery  
 **Working name:** ScanWise (not final)
 
 ## 1. Vision
-Build a smart everyday scanner that helps a person move from **scanning a code** to **understanding the information behind it**.
 
-A user points the camera at a QR code or barcode. The app identifies the code, decodes it, and presents the result in a detailed, easy-to-understand screen. Where reliable information is available, the app can enrich the result with relevant context. The user can read the content, listen to it aloud, and use built-in AI tools to ask questions or get explanations.
+Build an **AI-powered universal information scanner**: scan something, understand it, ask questions about it, and listen to the answer.
 
-The product should be more useful than a camera that only displays raw code text or opens a link without context.
+A user scans a QR code or supported barcode. The app decodes the content, recognizes what kind of information it represents, and presents a detailed, easy-to-understand result. Where reliable open datasets or APIs provide additional context, the app enriches the result and identifies its source. Users can ask contextual questions, receive explanations or summaries, translate content, and listen to the answer.
 
-## 2. The core user journey
-1. **Open scanner** — the user sees a simple camera-first scanning experience.
-2. **Scan** — the app detects a QR code or supported barcode.
-3. **Identify** — the app determines the code format and extracts its content or identifier.
-4. **Understand** — the app displays the decoded result with a clear title, useful details, and suitable actions.
-5. **Explore** — the user can ask AI to explain, summarize, translate, or clarify the information.
-6. **Listen** — the user can use text-to-speech / read-aloud to hear supported content.
-7. **Continue** — the user can copy, share, open, save, or revisit the scan where appropriate.
+The app should do more than decode a string or open a link. It should help people understand what they scanned.
 
-## 3. What “full information” should mean
-The app should aim to show the most useful information that can be reliably obtained for the scanned code. It must not imply that every code contains a complete profile or that the app can always identify an unknown item.
+## 2. Core experience
+
+1. **Scan:** use the camera or, if approved, an image from the gallery.
+2. **Decode:** identify the symbology and extract the QR payload or barcode identifier.
+3. **Classify:** determine whether the result is a URL, product identifier, contact card, text, Wi-Fi payload, or another supported type.
+4. **Enrich:** query relevant open datasets or APIs when available. Do not assume every code has a matching public record.
+5. **Present:** show the decoded content, useful details, data provenance, and safe user-controlled actions.
+6. **Ask:** let the user ask questions about the scan and its sourced information.
+7. **Listen:** read the result or AI answer aloud.
+8. **Continue:** allow appropriate copy, share, save, or history actions.
+
+## 3. Meaning of “universal”
+
+Universal describes the ambition to understand many kinds of scanned information, not a claim that every code or object can always be identified. The initial product scope will focus on QR codes and common product barcodes. Other visual recognition or OCR use cases require separate evaluation.
 
 ### QR codes
-A QR code may contain plain text, a web address, contact details, Wi-Fi configuration, an email address, a phone number, an event, payment-related data, or another structured payload.
-
-The app should:
-- Show the decoded payload in a readable format.
-- Recognize common QR content types and present relevant actions.
-- Preview links and explain the destination domain before opening.
-- Clearly label content that cannot be interpreted or verified.
+QR payloads can represent plain text, URLs, contact details, Wi-Fi configuration, email addresses, phone numbers, events, payment-related data, or structured content. The app should decode first, classify known formats, and show safe actions. It must not automatically open links, connect to networks, call numbers, or initiate payments.
 
 ### Product barcodes
-A product barcode usually contains an identifier, not a complete product description. The app may use that identifier to look up product information from an external or locally available catalogue.
+Most retail barcodes encode an identifier rather than a full product profile. Product details require a lookup against a catalogue. The app should display matching details only when available, include source attribution, and clearly show when no reliable match is found.
 
-Where data is found, a product detail view could include:
-- Product name and brand.
-- Product image, if a trustworthy source provides one.
-- Category and product description.
-- Manufacturer or other catalogue details where available.
-- Source attribution and the date or status of retrieved information when practical.
+## 4. AI capabilities
 
-If no reliable match exists, show the barcode number and say that product details were not found. Never invent product facts.
+Candidate contextual capabilities:
+- **Explain:** explain what the scanned content means in plain language.
+- **Ask AI:** answer follow-up questions using the current scan as context.
+- **Summarize:** condense long content into useful points.
+- **Translate:** translate decoded text or sourced information.
+- **Read aloud:** speak the scan result or AI answer. This may use device TTS or a self-hosted open model; it is not inherently an AI reasoning feature.
+- **Compare:** compare two scanned products or records when sufficient trustworthy data exists.
+- **Extract:** organize useful fields from supported text or structured payloads.
 
-## 4. AI capabilities — candidate direction
-AI should make scanned information easier to understand, not fabricate missing facts. Candidate capabilities include:
-- **Explain:** explain a product, QR payload, label, or technical term in simple language.
-- **Summarize:** turn long decoded text or retrieved information into key points.
-- **Ask AI:** let users ask questions about the current scan.
-- **Translate:** translate supported text into a selected language.
-- **Read aloud:** speak the decoded or summarized content using text-to-speech. This is an accessibility and convenience feature, not necessarily an AI feature.
-- **Compare:** compare two scanned products when enough trustworthy data is available.
-- **Extract:** identify and organize useful fields from supported text or structured content.
-- **Safety-aware link help:** explain visible URL details and warn about suspicious patterns without claiming a link is safe.
+AI must distinguish between decoded data, external dataset results, and generated interpretation. It must not invent missing product details or present unsupported claims as facts.
 
-AI responses should distinguish between decoded content, information retrieved from a source, and AI-generated interpretation. When possible, show sources for external facts. If evidence is missing, the AI should say so.
+## 5. Open-source-first technology and data principle
 
-## 5. Intended users and use cases
-Potential users include:
-- People who scan products while shopping and want to understand what they are looking at.
-- People who scan QR codes for websites, menus, events, contact details, or Wi-Fi.
-- People who want long or unfamiliar content explained in simpler language.
-- People who benefit from listening instead of reading.
-- People who need a scan history to revisit previously scanned information.
+The project will prioritize:
+1. Open-source scanning, OCR, AI, and speech software.
+2. Open datasets and APIs with clear reuse terms.
+3. Self-hostable inference and processing services when feasible.
+4. Hosted services only after evaluating price, reliability, privacy, rate limits, and licensing.
+5. Replaceable providers behind internal interfaces so the product is not locked to one vendor.
 
-These are hypotheses to validate through discovery, not a finalized target-market decision.
+“Open source” must be checked at the correct layer: application code, model weights, dataset, API service, and hosted provider can each have different licenses or terms. A free API is not automatically open source, and an open-weight model is not automatically unrestricted for every use.
 
-## 6. Product principles
-1. **Scan first:** the primary action should be immediately obvious.
-2. **Useful detail:** present information in a structured, readable way rather than dumping raw text.
-3. **Honest results:** separate decoded facts, catalogue lookups, and AI interpretation.
-4. **Privacy by design:** process locally where possible; explain clearly whenever content is sent to an external service.
-5. **Safe actions:** do not automatically open links, join networks, call numbers, or initiate payments just because a code was scanned.
-6. **Accessible by default:** support readable layouts, adjustable text where practical, and read-aloud.
-7. **Fast and dependable:** scanning and decoding should work without an AI request.
-8. **Graceful failure:** show the raw code result when enrichment is unavailable.
+## 6. Intended users and use cases
 
-## 7. Trust, privacy, and safety
-- Ask for camera permission only when needed and explain why.
-- Do not upload camera frames by default.
-- Do not send scan contents to an AI provider without clear disclosure and an appropriate user action.
-- Treat scanned text and QR payloads as untrusted input. A scanned payload must never be allowed to override app or AI safety instructions.
-- Preview web destinations and require user action before opening them.
-- Avoid presenting catalogue information as verified if the source is incomplete or unreliable.
-- Do not claim that a barcode or QR code is safe, authentic, or genuine solely because it scans successfully.
-- Define how scan history is stored, protected, exported, and deleted before release.
+Potential users include shoppers, everyday consumers, students, travellers, and people who prefer spoken or simplified explanations. These groups remain hypotheses until validated.
 
-## 8. Initial product boundaries
-The first version should focus on:
-- Camera scanning for selected QR formats and common product barcode formats.
-- Accurate decoding and useful result presentation.
-- Basic actions appropriate to each content type.
-- A read-aloud option for readable text.
-- A small, clearly scoped set of AI actions, subject to cost, privacy, and quality validation.
+## 7. Product principles
 
-The exact barcode formats, data providers, AI model/provider, supported languages, offline behavior, account model, and monetization are not yet decided.
+- **Scan first:** scanning and decoding must remain fast.
+- **Useful understanding:** show structured details rather than raw data alone.
+- **Honest provenance:** identify whether information came from the code, a dataset, or AI.
+- **Open-source first:** prefer auditable, replaceable, self-hostable components.
+- **Privacy by design:** avoid uploading camera frames; disclose external processing and request consent.
+- **Safe actions:** require user confirmation before opening or acting on scanned content.
+- **Accessible:** provide readable layouts and read-aloud.
+- **Graceful fallback:** scanning and raw decoding should work even if AI or enrichment services are unavailable.
 
-## 9. What success looks like
-A user can scan a supported code quickly, understand what it contains, find relevant details when reliable data exists, and choose to read, listen, or ask for an explanation — without being misled about what the app knows.
+## 8. Privacy, security, and trust
+
+- Request camera permission only when needed.
+- Process camera frames locally where practical.
+- Do not send scan content to an AI provider without clear disclosure and user action.
+- Treat scanned payloads as untrusted data, never as instructions that can override system or app rules.
+- Preview web destinations and require a deliberate open action.
+- Do not claim that a code or product is authentic or safe merely because it scans.
+- Store history locally by default unless a different model is explicitly approved.
+- Review licenses, data terms, and retention policies before integrating a provider.
+
+## 9. Initial scope boundary
+
+The likely first milestone includes camera-based QR and common barcode scanning, reliable decoding, content classification, a detailed result screen, a small set of contextual AI actions, and read-aloud. Exact formats, platforms, catalogue coverage, AI model, deployment, and monetization remain open.
+
+## 10. Success statement
+
+A person can scan a supported code, understand what it contains, retrieve useful information where reliable open data exists, ask relevant questions, and listen to a clear answer — without being misled about the source or certainty of the information.
